@@ -10,6 +10,7 @@ public sealed class MultiStrategyEngine
     private readonly List<MarketBar> _bars = [];
     private ActiveTradeContext? _activeTrade;
     private DateOnly _currentDate;
+    private int _dailyTradeCount;
 
     public MultiStrategyEngine(MultiStrategyConfig config)
     {
@@ -39,6 +40,7 @@ public sealed class MultiStrategyEngine
         {
             _currentDate = tradingDate;
             _context.OnNewDay();
+            _dailyTradeCount = 0;
             // Preserve _activeTrade if we're still in a position (overnight hold);
             // only clear it when flat so exit management continues into the new day.
             if (currentPosition is null || currentPosition.Side == PositionSide.Flat)
@@ -80,6 +82,19 @@ public sealed class MultiStrategyEngine
                 _activeTrade.HighestHighSinceEntry = bar.High;
             if (bar.Low < _activeTrade.LowestLowSinceEntry)
                 _activeTrade.LowestLowSinceEntry = bar.Low;
+
+            // Break-even stop: move stop to entry when profit reaches 1R
+            if (_config.EnableBreakEvenStop && !_activeTrade.BreakEvenActivated && _activeTrade.RiskAmount > 0)
+            {
+                var unrealizedR = _activeTrade.Direction == PositionSide.Long
+                    ? (bar.Close - _activeTrade.EntryPrice) / _activeTrade.RiskAmount
+                    : (_activeTrade.EntryPrice - bar.Close) / _activeTrade.RiskAmount;
+                if (unrealizedR >= _config.BreakEvenActivationR)
+                {
+                    _activeTrade.TrailingStopLevel = _activeTrade.EntryPrice;
+                    _activeTrade.BreakEvenActivated = true;
+                }
+            }
 
             // ATR trailing stop (activates after N bars)
             if (_activeTrade.BarsSinceEntry >= _config.TrailingStopActivationBars && _context.Atr14 > 0)
@@ -140,8 +155,10 @@ public sealed class MultiStrategyEngine
                 }
             }
 
-            // Bar-break trailing exit (behind config flag, default off)
-            if (_config.UseBarBreakExit && PatternDetector.CheckBarBreakExit(bar, prevBar, _activeTrade.Direction))
+            // Bar-break trailing exit (global config flag or per-trade flag)
+            if ((_config.UseBarBreakExit || _activeTrade.UseBarBreakExit)
+                && _activeTrade.BarsSinceEntry >= _config.MinBarBreakHoldBars
+                && PatternDetector.CheckBarBreakExit(bar, prevBar, _activeTrade.Direction))
             {
                 LatestSignalText = "Flatten (bar-break)";
                 LatestReason = $"[{_activeTrade.OwningStrategyName}] Bar-break exit triggered";
@@ -226,20 +243,44 @@ public sealed class MultiStrategyEngine
             return null;
         }
 
-        // Iterate strategies by priority (S/R first, EMA second), first match wins
+        // Time-of-day filter
+        if (_config.EnableTimeFilter)
+        {
+            var hour = nowInTradingTimezone.Hour;
+            var minute = nowInTradingTimezone.Minute;
+            var timeMinutes = hour * 60 + minute;
+            var lunchStart = _config.LunchStartHour * 60 + _config.LunchStartMinute;
+            var lunchEnd = _config.LunchEndHour * 60 + _config.LunchEndMinute;
+            var lateCutoff = _config.LateCutoffHour * 60 + _config.LateCutoffMinute;
+
+            if ((timeMinutes >= lunchStart && timeMinutes < lunchEnd) || timeMinutes >= lateCutoff)
+            {
+                LatestReason = "Outside optimal trading window";
+                return null;
+            }
+        }
+
+        // Daily trade limit
+        if (_dailyTradeCount >= _config.MaxDailyTrades)
+        {
+            LatestReason = $"Daily trade limit reached ({_config.MaxDailyTrades})";
+            return null;
+        }
+
+        // Iterate strategies by priority, first match wins
         StrategySignal? signal = null;
 
-        if (_config.EnableStrategy2)
-            signal = SRReversalStrategy.Evaluate(_bars, _context, _config, idx);
-
-        if (signal is null && _config.EnableStrategy1)
+        if (_config.EnableStrategy1)
             signal = EmaPullbackStrategy.Evaluate(_bars, _context, _config, idx);
 
-        if (signal is null && _config.EnableStrategy3)
-            signal = FiftyPctPullbackStrategy.Evaluate(_bars, _context, _config, idx);
+        if (signal is null && _config.EnableStrategy5)
+            signal = EmaPullbackBarBreakStrategy.Evaluate(_bars, _context, _config, idx);
 
-        if (signal is null && _config.EnableStrategy4)
-            signal = MomentumStrategy.Evaluate(_bars, _context, _config, idx);
+        if (signal is null && _config.EnableStrategy7)
+            signal = SecondLegStrategy.Evaluate(_bars, _context, _config, idx);
+
+        if (signal is null && _config.EnableStrategy9)
+            signal = BrooksPriceActionStrategy.Evaluate(_bars, _context, _config, idx);
 
         if (signal is null)
         {
@@ -273,9 +314,12 @@ public sealed class MultiStrategyEngine
             HighestHighSinceEntry = bar.High,
             LowestLowSinceEntry = bar.Low,
             BarsSinceEntry = 0,
-            TrailingStopLevel = signal.StopPrice
+            TrailingStopLevel = signal.StopPrice,
+            RiskAmount = Math.Abs(signal.EntryPrice - signal.StopPrice),
+            UseBarBreakExit = strategyName == EmaPullbackBarBreakStrategy.Name
         };
 
+        _dailyTradeCount++;
         LatestSignalText = $"{signal.Direction} ({strategyName})";
         LatestReason = signal.Reason;
 

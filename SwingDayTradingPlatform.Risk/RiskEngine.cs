@@ -6,6 +6,8 @@ public sealed class RiskEngine
 {
     private readonly RiskConfig _config;
     private DateTimeOffset _lastEntryAttemptUtc = DateTimeOffset.MinValue;
+    private decimal _dailyCumulativeR;
+    private int _consecutiveLosses;
 
     public RiskEngine(RiskConfig config)
     {
@@ -17,6 +19,8 @@ public sealed class RiskEngine
     public string LastReason { get; private set; } = "Ready";
     public int TradeCountToday { get; private set; }
     public int LossCountToday { get; private set; }
+    public int ConsecutiveLosses => _consecutiveLosses;
+    public decimal DailyCumulativeR => _dailyCumulativeR;
 
     public void ResetForNewDay()
     {
@@ -26,6 +30,8 @@ public sealed class RiskEngine
         _lastEntryAttemptUtc = DateTimeOffset.MinValue;
         TradeCountToday = 0;
         LossCountToday = 0;
+        _dailyCumulativeR = 0m;
+        _consecutiveLosses = 0;
     }
 
     public void RestoreDayState(int tradeCount, int lossCount)
@@ -81,7 +87,7 @@ public sealed class RiskEngine
         return true;
     }
 
-    public int CalculateContracts(decimal entryPrice, decimal stopPrice, decimal accountNetLiq, decimal pointValue)
+    public int CalculateContracts(decimal entryPrice, decimal stopPrice, decimal accountNetLiq, decimal pointValue, decimal tickSize = 0.25m)
     {
         var stopDistance = Math.Abs(entryPrice - stopPrice);
         if (stopDistance <= 0)
@@ -94,6 +100,16 @@ public sealed class RiskEngine
         {
             LastReason = $"Stop distance {stopDistance:0.##} > max {_config.MaxStopPoints:0.##}";
             return 0;
+        }
+
+        if (_config.MaxStopTicks > 0 && tickSize > 0)
+        {
+            var stopTicks = stopDistance / tickSize;
+            if (stopTicks > _config.MaxStopTicks)
+            {
+                LastReason = $"Stop ticks {stopTicks:0.#} > max {_config.MaxStopTicks}";
+                return 0;
+            }
         }
 
         if (_config.FixedContracts > 0)
@@ -119,12 +135,27 @@ public sealed class RiskEngine
         LastReason = reason;
     }
 
-    public void RegisterClosedTrade(decimal realizedPnLDelta)
+    public void RegisterClosedTrade(decimal realizedPnLDelta, decimal rMultiple = 0m)
     {
         if (realizedPnLDelta < 0)
+        {
             LossCountToday++;
+            _consecutiveLosses++;
+        }
+        else
+        {
+            _consecutiveLosses = 0;
+        }
+
+        _dailyCumulativeR += rMultiple;
 
         if (LossCountToday >= _config.MaxLossesPerDay)
             ArmKillSwitch($"Stopped after {LossCountToday} losing trades.");
+
+        if (_consecutiveLosses >= _config.MaxConsecutiveLossesPerDay)
+            ArmKillSwitch($"Consecutive loss limit hit ({_consecutiveLosses})");
+
+        if (_dailyCumulativeR <= -_config.MaxDailyLossR)
+            ArmKillSwitch($"Daily R-loss limit hit ({_dailyCumulativeR:F2}R)");
     }
 }

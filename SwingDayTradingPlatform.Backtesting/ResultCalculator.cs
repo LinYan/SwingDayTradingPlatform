@@ -35,6 +35,12 @@ public static class ResultCalculator
         var sharpe = CalculateSharpe(dailyReturns, config.StartingCapital);
         var sortino = CalculateSortino(dailyReturns, config.StartingCapital);
 
+        // R-based metrics
+        var avgRPerTrade = CalculateAvgRPerTrade(trades);
+        var expectancyR = CalculateExpectancyR(trades);
+        var maxDrawdownR = CalculateMaxDrawdownR(trades);
+        var rDistribution = CalculateRDistribution(trades);
+
         return new BacktestResult
         {
             Parameters = parameters,
@@ -60,7 +66,11 @@ public static class ResultCalculator
             DailyReturns = dailyReturns,
             MonthlyReturns = monthlyReturns,
             Trades = trades,
-            StrategyName = strategyName
+            StrategyName = strategyName,
+            AvgRPerTrade = avgRPerTrade,
+            ExpectancyR = expectancyR,
+            MaxDrawdownR = maxDrawdownR,
+            RDistribution = rDistribution
         };
     }
 
@@ -110,7 +120,6 @@ public static class ResultCalculator
 
     public static List<MonthlyReturn> CalculateMonthlyReturns(List<DailyReturn> dailyReturns, decimal startingCapital)
     {
-        // Group daily P&L by month, tracking beginning-of-month equity for accurate % returns
         var monthlies = new Dictionary<(int Year, int Month), (decimal pnl, decimal startEquity)>();
         var equity = startingCapital;
 
@@ -140,7 +149,6 @@ public static class ResultCalculator
         if (dailyReturns.Count < 2 || startingCapital <= 0)
             return 0m;
 
-        // Convert daily PnL to percentage returns against rolling equity
         var equity = (double)startingCapital;
         var pctReturns = new double[dailyReturns.Count];
         for (var i = 0; i < dailyReturns.Count; i++)
@@ -165,7 +173,6 @@ public static class ResultCalculator
         if (dailyReturns.Count < 2 || startingCapital <= 0)
             return 0m;
 
-        // Convert daily PnL to percentage returns against rolling equity
         var equity = (double)startingCapital;
         var pctReturns = new double[dailyReturns.Count];
         for (var i = 0; i < dailyReturns.Count; i++)
@@ -176,8 +183,6 @@ public static class ResultCalculator
         }
 
         var mean = pctReturns.Average();
-        // Use all observations for downside deviation (standard Sortino formula):
-        // sqrt(sum(min(r, 0)^2) / N) where N = total observations
         var downsideSquared = pctReturns.Select(r => r < 0 ? r * r : 0.0).ToArray();
         var hasDownside = downsideSquared.Any(d => d > 0);
 
@@ -189,5 +194,73 @@ public static class ResultCalculator
             return 0m;
 
         return (decimal)(mean / downsideDev * Math.Sqrt(252));
+    }
+
+    public static decimal CalculateAvgRPerTrade(List<BacktestTrade> trades)
+    {
+        if (trades.Count == 0) return 0m;
+        return trades.Average(t => t.RMultiple);
+    }
+
+    public static decimal CalculateExpectancyR(List<BacktestTrade> trades)
+    {
+        if (trades.Count == 0) return 0m;
+
+        var wins = trades.Where(t => t.RMultiple > 0).ToList();
+        var losses = trades.Where(t => t.RMultiple <= 0).ToList();
+
+        var winRate = (decimal)wins.Count / trades.Count;
+        var lossRate = (decimal)losses.Count / trades.Count;
+        var avgWinR = wins.Count > 0 ? wins.Average(t => t.RMultiple) : 0m;
+        var avgLossR = losses.Count > 0 ? Math.Abs(losses.Average(t => t.RMultiple)) : 0m;
+
+        return winRate * avgWinR - lossRate * avgLossR;
+    }
+
+    public static decimal CalculateMaxDrawdownR(List<BacktestTrade> trades)
+    {
+        if (trades.Count == 0) return 0m;
+
+        var runningR = 0m;
+        var peakR = 0m;
+        var maxDDR = 0m;
+
+        foreach (var trade in trades)
+        {
+            runningR += trade.RMultiple;
+            if (runningR > peakR)
+                peakR = runningR;
+
+            var dd = peakR - runningR;
+            if (dd > maxDDR)
+                maxDDR = dd;
+        }
+
+        return maxDDR;
+    }
+
+    public static List<RDistributionBucket> CalculateRDistribution(List<BacktestTrade> trades)
+    {
+        if (trades.Count == 0) return [];
+
+        var bucketSize = 0.5m;
+        var minR = trades.Min(t => t.RMultiple);
+        var maxR = trades.Max(t => t.RMultiple);
+
+        var bucketStart = Math.Floor(minR / bucketSize) * bucketSize;
+        var bucketEnd = Math.Ceiling(maxR / bucketSize) * bucketSize;
+        if (bucketEnd <= maxR) bucketEnd += bucketSize;
+
+        var buckets = new List<RDistributionBucket>();
+        for (var b = bucketStart; b < bucketEnd; b += bucketSize)
+        {
+            var bMin = b;
+            var bMax = b + bucketSize;
+            var count = trades.Count(t => t.RMultiple >= bMin && t.RMultiple < bMax);
+            var pct = trades.Count > 0 ? (decimal)count / trades.Count * 100m : 0m;
+            buckets.Add(new RDistributionBucket(bMin, bMax, count, pct));
+        }
+
+        return buckets;
     }
 }

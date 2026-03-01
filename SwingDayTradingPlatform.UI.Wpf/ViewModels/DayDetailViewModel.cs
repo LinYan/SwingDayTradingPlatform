@@ -88,16 +88,23 @@ public sealed class DayDetailViewModel : ObservableObject
             VwapValues = null;
         }
 
-        // Filter trades for this day
+        // Filter trades for this day — include trades whose entry OR exit falls on the date
         var dayTrades = trades.Where(t =>
         {
             var localEntry = TimeZoneInfo.ConvertTime(t.EntryTime, tz);
-            return DateOnly.FromDateTime(localEntry.DateTime) == date;
+            var localExit = TimeZoneInfo.ConvertTime(t.ExitTime, tz);
+            return DateOnly.FromDateTime(localEntry.DateTime) == date
+                || DateOnly.FromDateTime(localExit.DateTime) == date;
         }).ToList();
 
+        // Convert times to trading timezone for grid display (HH:mm format)
         DayTrades.Clear();
         foreach (var t in dayTrades)
-            DayTrades.Add(t);
+            DayTrades.Add(t with
+            {
+                EntryTime = TimeZoneInfo.ConvertTime(t.EntryTime, tz),
+                ExitTime = TimeZoneInfo.ConvertTime(t.ExitTime, tz)
+            });
 
         // Compute selected date display string
         var dt = date.ToDateTime(TimeOnly.MinValue);
@@ -114,24 +121,36 @@ public sealed class DayDetailViewModel : ObservableObject
             SelectedDateDisplay = $"{dt:ddd, MMM dd yyyy}   No trades";
         }
 
-        // Build trade markers
+        // Build trade markers — only add markers whose time falls within this day's bars
         var markers = new List<TradeMarker>();
+        var dayStart = dayBars.Count > 0 ? dayBars[0].OpenTimeUtc : DateTimeOffset.MaxValue;
+        var dayEnd = dayBars.Count > 0 ? dayBars[^1].CloseTimeUtc : DateTimeOffset.MinValue;
+
         foreach (var trade in dayTrades)
         {
             var isLong = trade.Direction == "Long";
-            markers.Add(new TradeMarker(
-                trade.EntryTime,
-                trade.EntryPrice,
-                true,
-                isLong,
-                $"Entry: {trade.Direction} @ {trade.EntryPrice:F2}\n{trade.EntryReason}"));
 
-            markers.Add(new TradeMarker(
-                trade.ExitTime,
-                trade.ExitPrice,
-                false,
-                isLong,
-                $"Exit: {trade.ExitReason} @ {trade.ExitPrice:F2}\nP&L: {trade.PnLPoints:F2} pts (${trade.PnLDollars:N2})\nMAE: {trade.MAE:F2} MFE: {trade.MFE:F2}"));
+            // Entry marker — only if within this day's bar range
+            if (trade.EntryTime >= dayStart && trade.EntryTime <= dayEnd)
+            {
+                markers.Add(new TradeMarker(
+                    trade.EntryTime,
+                    trade.EntryPrice,
+                    true,
+                    isLong,
+                    $"Entry: {trade.Direction} @ {trade.EntryPrice:F2}\n{trade.EntryReason}"));
+            }
+
+            // Exit marker — only if within this day's bar range
+            if (trade.ExitTime >= dayStart && trade.ExitTime <= dayEnd)
+            {
+                markers.Add(new TradeMarker(
+                    trade.ExitTime,
+                    trade.ExitPrice,
+                    false,
+                    isLong,
+                    $"Exit: {trade.ExitReason} @ {trade.ExitPrice:F2}\nP&L: {trade.PnLPoints:F2} pts (${trade.PnLDollars:N2})\nMAE: {trade.MAE:F2} MFE: {trade.MFE:F2}"));
+            }
         }
         TradeMarkers = markers;
     }

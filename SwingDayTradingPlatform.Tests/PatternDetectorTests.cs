@@ -205,8 +205,8 @@ public class PatternDetectorTests
             bars.Add(TestHelpers.MakeBar(open, close + 1, open - 1, close, minutesOffset: i * 5));
         }
 
-        var atr = 3m; // body (8) > ratio(1) * atr(3) = 3
-        var result = PatternDetector.IsMomentumBurst(bars, atr, 1.0m, 4, 7, out var dir, out var stop);
+        var atr = 3m; // body (8) > avgBodyRatio(1) * atr(3) = 3
+        var result = PatternDetector.IsMomentumBurst(bars, atr, 1.0m, 4, 7, out var dir, out var stop, maxModerate: 1, moderateMinRatio: 0.4m);
         Assert.True(result);
         Assert.Equal(PositionSide.Long, dir);
     }
@@ -221,7 +221,7 @@ public class PatternDetectorTests
             TestHelpers.MakeBar(101, 109, 100, 108, minutesOffset: 10), // bullish
             TestHelpers.MakeBar(108, 109, 101, 102, minutesOffset: 15), // bearish
         };
-        var result = PatternDetector.IsMomentumBurst(bars, 3m, 1.0m, 4, 3, out _, out _);
+        var result = PatternDetector.IsMomentumBurst(bars, 3m, 1.0m, 4, 3, out _, out _, maxModerate: 1, moderateMinRatio: 0.4m);
         Assert.False(result);
     }
 

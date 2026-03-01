@@ -188,6 +188,9 @@ public sealed class RiskConfig
     public decimal MaxStopPoints { get; init; } = 10m;
     public int CooldownSeconds { get; init; } = 60;
     public bool UseUnrealizedPnLForDailyLimit { get; init; } = true;
+    public decimal MaxDailyLossR { get; init; } = 99m;
+    public int MaxConsecutiveLossesPerDay { get; init; } = 99;
+    public int MaxStopTicks { get; init; } = 0;
 }
 
 public sealed class StorageConfig

@@ -463,7 +463,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
                 }
                 _lastRealizedPnL = e.Snapshot.RealizedPnL;
             }
-            AccountSummary = $"NetLiq ${e.Snapshot.NetLiquidation:0.##} | Available ${e.Snapshot.AvailableFunds:0.##} | Realized ${e.Snapshot.RealizedPnL:0.##} | Unrealized ${e.Snapshot.UnrealizedPnL:0.##} | Trades {_riskEngine.TradeCountToday}/{_config.Risk.MaxTradesPerDay} | Losses {_riskEngine.LossCountToday}/{_config.Risk.MaxLossesPerDay}";
+            AccountSummary = $"NetLiq ${e.Snapshot.NetLiquidation:N0} | Available ${e.Snapshot.AvailableFunds:N0} | Realized ${e.Snapshot.RealizedPnL:N0} | Unrealized ${e.Snapshot.UnrealizedPnL:N0} | Trades {_riskEngine.TradeCountToday}/{_config.Risk.MaxTradesPerDay} | Losses {_riskEngine.LossCountToday}/{_config.Risk.MaxLossesPerDay}";
             if (_riskEngine.KillSwitchArmed && RunState == StrategyRunState.Running)
             {
                 RunState = StrategyRunState.Halted;

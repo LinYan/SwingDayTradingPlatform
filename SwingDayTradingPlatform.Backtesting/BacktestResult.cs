@@ -28,6 +28,12 @@ public sealed class BacktestResult
     public required List<BacktestTrade> Trades { get; init; }
 
     public string StrategyName { get; init; } = "All";
+
+    // R-based metrics
+    public decimal AvgRPerTrade { get; init; }
+    public decimal ExpectancyR { get; init; }
+    public decimal MaxDrawdownR { get; init; }
+    public List<RDistributionBucket> RDistribution { get; init; } = [];
 }
 
 public sealed record EquityPoint(
@@ -63,11 +69,19 @@ public sealed record BacktestTrade(
     public decimal MFE { get; init; }
     public string EntryReason { get; init; } = "";
     public string ExitReasonDetail { get; init; } = "";
+    public decimal RMultiple { get; init; }
+    public decimal InitialStopDistance { get; init; }
     public TimeSpan HoldTime => ExitTime - EntryTime;
     public string HoldTimeFormatted => HoldTime.TotalHours >= 1
         ? $"{(int)HoldTime.TotalHours}h {HoldTime.Minutes}m"
         : $"{(int)HoldTime.TotalMinutes}m";
 }
+
+public sealed record RDistributionBucket(
+    decimal BucketMin,
+    decimal BucketMax,
+    int Count,
+    decimal Pct);
 
 public sealed record DailySummary(
     DateOnly Date,

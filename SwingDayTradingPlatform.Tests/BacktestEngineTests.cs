@@ -28,9 +28,6 @@ public class BacktestEngineTests
         MaxStopPoints = 10m,
         CooldownSeconds = 0,
         EnableStrategy1 = true,
-        EnableStrategy2 = true,
-        EnableStrategy3 = true,
-        EnableStrategy4 = true,
         EnableHourlyBias = false,
     };
 
@@ -208,20 +205,12 @@ public class BacktestEngineTests
             SlowEmaPeriod = 40,
             AtrPeriod = 10,
             EnableStrategy1 = true,
-            EnableStrategy2 = true,
-            EnableStrategy3 = true,
-            EnableStrategy4 = true,
             TrailingStopAtrMultiplier = 3.5m,
             TrailingStopActivationBars = 7,
             UseBarBreakExit = true,
             EmaPullbackRewardRatio = 3.0m,
             EmaPullbackTolerance = 1.25m,
-            SRMinTouches = 5,
-            SRReversalRewardRatio = 4.0m,
-            MomentumRewardRatio = 5.0m,
-            MomentumPullbackWindowBars = 10,
-            MaxStopPoints = 20m,
-            BigMoveStaleBars = 50
+            MaxStopPoints = 20m
         };
 
         // Run a per-strategy backtest — the engine internally calls BuildMultiConfig
@@ -238,24 +227,16 @@ public class BacktestEngineTests
         var filteredEngine = new BacktestEngine("EmaPullback");
         var multiConfig = (MultiStrategyConfig)method.Invoke(filteredEngine, new object[] { parameters })!;
 
-        // Verify strategy flags
-        Assert.True(multiConfig.EnableStrategy1);   // EmaPullback
-        Assert.False(multiConfig.EnableStrategy2);
-        Assert.False(multiConfig.EnableStrategy3);
-        Assert.False(multiConfig.EnableStrategy4);
+        // Verify strategy flags — only EmaPullback enabled when filtered
+        Assert.True(multiConfig.EnableStrategy1);
 
-        // Verify all NEW fields are propagated (not default values)
+        // Verify all fields are propagated (not default values)
         Assert.Equal(3.5m, multiConfig.TrailingStopAtrMultiplier);
         Assert.Equal(7, multiConfig.TrailingStopActivationBars);
         Assert.True(multiConfig.UseBarBreakExit);
         Assert.Equal(3.0m, multiConfig.EmaPullbackRewardRatio);
         Assert.Equal(1.25m, multiConfig.EmaPullbackTolerance);
-        Assert.Equal(5, multiConfig.SRMinTouches);
-        Assert.Equal(4.0m, multiConfig.SRReversalRewardRatio);
-        Assert.Equal(5.0m, multiConfig.MomentumRewardRatio);
-        Assert.Equal(10, multiConfig.MomentumPullbackWindowBars);
         Assert.Equal(20m, multiConfig.MaxStopPoints);
-        Assert.Equal(50, multiConfig.BigMoveStaleBars);
 
         // Also verify original fields are still propagated
         Assert.Equal(15, multiConfig.FastEmaPeriod);

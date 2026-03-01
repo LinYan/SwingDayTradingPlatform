@@ -17,9 +17,9 @@ public sealed class BacktestParameters
 
     // Multi-strategy config fields
     public bool EnableStrategy1 { get; init; } = true;
-    public bool EnableStrategy2 { get; init; } = true;
-    public bool EnableStrategy3 { get; init; } = true;
-    public bool EnableStrategy4 { get; init; } = true;
+    public bool EnableStrategy5 { get; init; } = true;
+    public bool EnableStrategy7 { get; init; } = true;
+    public bool EnableStrategy9 { get; init; } = true;
     public bool EnableHourlyBias { get; init; } = true;
     public int HourlyRangeLookback { get; init; } = 10;
     public int RangeTopPct { get; init; } = 75;
@@ -27,30 +27,66 @@ public sealed class BacktestParameters
     public int SwingLookback { get; init; } = 3;
     public decimal SRClusterAtrFactor { get; init; } = 0.5m;
     public decimal BigMoveAtrFactor { get; init; } = 3.0m;
-    public int MomentumBars { get; init; } = 3;
-    public decimal MomentumBodyAtrRatio { get; init; } = 0.7m;
     public decimal TickSize { get; init; } = 0.25m;
 
     // Trailing stop
     public decimal TrailingStopAtrMultiplier { get; init; } = 2.0m;
-    public int TrailingStopActivationBars { get; init; } = 3;
+    public int TrailingStopActivationBars { get; init; } = 4;
     public bool UseBarBreakExit { get; init; } = false;
+    public int MinBarBreakHoldBars { get; init; } = 2;
     public bool UseReversalBarExit { get; init; } = false;
+
+    // RSI
+    public int RsiPeriod { get; init; } = 14;
 
     // EmaPullback enhancements
     public decimal EmaPullbackRewardRatio { get; init; } = 2.0m;
-    public decimal EmaPullbackTolerance { get; init; } = 0.75m;
+    public decimal EmaPullbackTolerance { get; init; } = 0.5m;
+    public decimal EmaMinSlopeAtr { get; init; } = 0.10m;
+    public decimal EmaBodyMinAtrRatio { get; init; } = 0.4m;
+    public decimal EmaRsiLongMin { get; init; } = 45m;
+    public decimal EmaRsiLongMax { get; init; } = 65m;
+    public decimal EmaRsiShortMin { get; init; } = 35m;
+    public decimal EmaRsiShortMax { get; init; } = 55m;
+    public decimal EmaStopAtrBuffer { get; init; } = 0.25m;
 
-    // SRReversal enhancements
-    public int SRMinTouches { get; init; } = 3;
-    public decimal SRReversalRewardRatio { get; init; } = 2.0m;
+    // SecondLeg
+    public int SL_FirstLegMaxBars { get; init; } = 15;
+    public decimal SL_MinFirstLegAtr { get; init; } = 2.0m;
+    public decimal SL_AnchorToleranceAtr { get; init; } = 0.5m;
+    public decimal SL_MinPullbackRetrace { get; init; } = 0.33m;
+    public decimal SL_MaxPullbackRetrace { get; init; } = 0.62m;
+    public bool SL_EnableFakeBreakout { get; init; } = true;
+    public decimal SL_EntryBodyMinAtr { get; init; } = 0.25m;
+    public decimal SL_StopAtrBuffer { get; init; } = 0.3m;
+    public decimal SL_RewardRatio { get; init; } = 2.0m;
 
-    // Momentum enhancements
-    public decimal MomentumRewardRatio { get; init; } = 2.5m;
-    public int MomentumPullbackWindowBars { get; init; } = 6;
+    // BrooksPA
+    public decimal BrooksPA_SignalBarBodyRatio { get; init; } = 0.5m;
+    public decimal BrooksPA_MinBarRangeAtr { get; init; } = 0.3m;
+    public int BrooksPA_PullbackLookback { get; init; } = 20;
+    public decimal BrooksPA_EmaToleranceAtr { get; init; } = 0.75m;
+    public decimal BrooksPA_RewardRatio { get; init; } = 2.0m;
+    public int BrooksPA_MaxStopTicks { get; init; } = 40;
 
-    // FiftyPctPullback
-    public int BigMoveStaleBars { get; init; } = 30;
+    // R-based risk
+    public decimal MaxDailyLossR { get; init; } = 99m;
+    public int MaxConsecutiveLossesPerDay { get; init; } = 99;
+    public int MaxStopTicks { get; init; } = 0;
+
+    // Global filters
+    public bool EnableTimeFilter { get; init; } = true;
+    public int LunchStartHour { get; init; } = 11;
+    public int LunchStartMinute { get; init; } = 30;
+    public int LunchEndHour { get; init; } = 13;
+    public int LunchEndMinute { get; init; } = 0;
+    public int LateCutoffHour { get; init; } = 15;
+    public int LateCutoffMinute { get; init; } = 45;
+    public int MaxDailyTrades { get; init; } = 6;
+
+    // Break-even stop
+    public bool EnableBreakEvenStop { get; init; } = true;
+    public decimal BreakEvenActivationR { get; init; } = 1.2m;
 
     public StrategyConfig ToStrategyConfig() => new()
     {
@@ -74,7 +110,10 @@ public sealed class BacktestParameters
         MaxLossesPerDay = MaxLossesPerDay,
         MaxStopPoints = MaxStopPoints,
         CooldownSeconds = CooldownSeconds,
-        UseUnrealizedPnLForDailyLimit = false
+        UseUnrealizedPnLForDailyLimit = false,
+        MaxDailyLossR = MaxDailyLossR,
+        MaxConsecutiveLossesPerDay = MaxConsecutiveLossesPerDay,
+        MaxStopTicks = MaxStopTicks
     };
 
     public MultiStrategyConfig ToMultiStrategyConfig() => new()
@@ -83,9 +122,9 @@ public sealed class BacktestParameters
         SlowEmaPeriod = SlowEmaPeriod,
         AtrPeriod = AtrPeriod,
         EnableStrategy1 = EnableStrategy1,
-        EnableStrategy2 = EnableStrategy2,
-        EnableStrategy3 = EnableStrategy3,
-        EnableStrategy4 = EnableStrategy4,
+        EnableStrategy5 = EnableStrategy5,
+        EnableStrategy7 = EnableStrategy7,
+        EnableStrategy9 = EnableStrategy9,
         EnableHourlyBias = EnableHourlyBias,
         HourlyRangeLookback = HourlyRangeLookback,
         RangeTopPct = RangeTopPct,
@@ -93,21 +132,48 @@ public sealed class BacktestParameters
         SwingLookback = SwingLookback,
         SRClusterAtrFactor = SRClusterAtrFactor,
         BigMoveAtrFactor = BigMoveAtrFactor,
-        MomentumBars = MomentumBars,
-        MomentumBodyAtrRatio = MomentumBodyAtrRatio,
         TickSize = TickSize,
         TrailingStopAtrMultiplier = TrailingStopAtrMultiplier,
         TrailingStopActivationBars = TrailingStopActivationBars,
         UseBarBreakExit = UseBarBreakExit,
+        MinBarBreakHoldBars = MinBarBreakHoldBars,
         UseReversalBarExit = UseReversalBarExit,
+        RsiPeriod = RsiPeriod,
         EmaPullbackRewardRatio = EmaPullbackRewardRatio,
         EmaPullbackTolerance = EmaPullbackTolerance,
-        SRMinTouches = SRMinTouches,
-        SRReversalRewardRatio = SRReversalRewardRatio,
-        MomentumRewardRatio = MomentumRewardRatio,
-        MomentumPullbackWindowBars = MomentumPullbackWindowBars,
+        EmaMinSlopeAtr = EmaMinSlopeAtr,
+        EmaBodyMinAtrRatio = EmaBodyMinAtrRatio,
+        EmaRsiLongMin = EmaRsiLongMin,
+        EmaRsiLongMax = EmaRsiLongMax,
+        EmaRsiShortMin = EmaRsiShortMin,
+        EmaRsiShortMax = EmaRsiShortMax,
+        EmaStopAtrBuffer = EmaStopAtrBuffer,
+        SL_FirstLegMaxBars = SL_FirstLegMaxBars,
+        SL_MinFirstLegAtr = SL_MinFirstLegAtr,
+        SL_AnchorToleranceAtr = SL_AnchorToleranceAtr,
+        SL_MinPullbackRetrace = SL_MinPullbackRetrace,
+        SL_MaxPullbackRetrace = SL_MaxPullbackRetrace,
+        SL_EnableFakeBreakout = SL_EnableFakeBreakout,
+        SL_EntryBodyMinAtr = SL_EntryBodyMinAtr,
+        SL_StopAtrBuffer = SL_StopAtrBuffer,
+        SL_RewardRatio = SL_RewardRatio,
+        BrooksPA_SignalBarBodyRatio = BrooksPA_SignalBarBodyRatio,
+        BrooksPA_MinBarRangeAtr = BrooksPA_MinBarRangeAtr,
+        BrooksPA_PullbackLookback = BrooksPA_PullbackLookback,
+        BrooksPA_EmaToleranceAtr = BrooksPA_EmaToleranceAtr,
+        BrooksPA_RewardRatio = BrooksPA_RewardRatio,
+        BrooksPA_MaxStopTicks = BrooksPA_MaxStopTicks,
         MaxStopPoints = MaxStopPoints,
-        BigMoveStaleBars = BigMoveStaleBars
+        EnableTimeFilter = EnableTimeFilter,
+        LunchStartHour = LunchStartHour,
+        LunchStartMinute = LunchStartMinute,
+        LunchEndHour = LunchEndHour,
+        LunchEndMinute = LunchEndMinute,
+        LateCutoffHour = LateCutoffHour,
+        LateCutoffMinute = LateCutoffMinute,
+        MaxDailyTrades = MaxDailyTrades,
+        EnableBreakEvenStop = EnableBreakEvenStop,
+        BreakEvenActivationR = BreakEvenActivationR
     };
 
     public string Label => $"F{FastEmaPeriod}/S{SlowEmaPeriod} ATR{AtrPeriod}x{AtrMultiplier} RR{RewardRiskRatio}";

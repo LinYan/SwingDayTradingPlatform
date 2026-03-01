@@ -7,9 +7,9 @@ public sealed class MultiStrategyConfig
     public int AtrPeriod { get; init; } = 14;
 
     public bool EnableStrategy1 { get; init; } = true;
-    public bool EnableStrategy2 { get; init; } = true;
-    public bool EnableStrategy3 { get; init; } = true;
-    public bool EnableStrategy4 { get; init; } = true;
+    public bool EnableStrategy5 { get; init; } = true;
+    public bool EnableStrategy7 { get; init; } = true;
+    public bool EnableStrategy9 { get; init; } = true;
 
     public bool EnableHourlyBias { get; init; } = true;
     public int HourlyRangeLookback { get; init; } = 10;
@@ -19,14 +19,13 @@ public sealed class MultiStrategyConfig
     public int SwingLookback { get; init; } = 3;
     public decimal SRClusterAtrFactor { get; init; } = 0.5m;
     public decimal BigMoveAtrFactor { get; init; } = 3.0m;
-    public int MomentumBars { get; init; } = 3;
-    public decimal MomentumBodyAtrRatio { get; init; } = 0.7m;
     public decimal TickSize { get; init; } = 0.25m;
 
     // Trailing stop
     public decimal TrailingStopAtrMultiplier { get; init; } = 2.0m;
-    public int TrailingStopActivationBars { get; init; } = 3;
+    public int TrailingStopActivationBars { get; init; } = 4;
     public bool UseBarBreakExit { get; init; } = false;
+    public int MinBarBreakHoldBars { get; init; } = 2;
     public bool UseReversalBarExit { get; init; } = false;
 
     // RSI
@@ -35,36 +34,35 @@ public sealed class MultiStrategyConfig
     // EmaPullback enhancements
     public decimal EmaPullbackRewardRatio { get; init; } = 2.0m;
     public decimal EmaPullbackTolerance { get; init; } = 0.5m;
-    public decimal EmaMinSlopeAtr { get; init; } = 0.05m;
-    public decimal EmaBodyMinAtrRatio { get; init; } = 0.3m;
-    public decimal EmaRsiLongMin { get; init; } = 40m;
-    public decimal EmaRsiLongMax { get; init; } = 70m;
-    public decimal EmaRsiShortMin { get; init; } = 30m;
-    public decimal EmaRsiShortMax { get; init; } = 60m;
+    public decimal EmaMinSlopeAtr { get; init; } = 0.10m;
+    public decimal EmaBodyMinAtrRatio { get; init; } = 0.4m;
+    public decimal EmaRsiLongMin { get; init; } = 45m;
+    public decimal EmaRsiLongMax { get; init; } = 65m;
+    public decimal EmaRsiShortMin { get; init; } = 35m;
+    public decimal EmaRsiShortMax { get; init; } = 55m;
     public decimal EmaStopAtrBuffer { get; init; } = 0.25m;
 
-    // SRReversal enhancements
-    public int SRMinTouches { get; init; } = 3;
-    public decimal SRReversalRewardRatio { get; init; } = 2.0m;
-    public int SRMaxFreshnessBarsSinceTouch { get; init; } = 40;
-    public decimal SRMinReversalRangeAtr { get; init; } = 0.3m;
-    public int SRCounterTrendMinTouches { get; init; } = 5;
+    // SecondLeg
+    public int SL_FirstLegMaxBars { get; init; } = 15;
+    public decimal SL_MinFirstLegAtr { get; init; } = 2.0m;
+    public decimal SL_AnchorToleranceAtr { get; init; } = 0.5m;
+    public decimal SL_MinPullbackRetrace { get; init; } = 0.33m;
+    public decimal SL_MaxPullbackRetrace { get; init; } = 0.62m;
+    public bool SL_EnableFakeBreakout { get; init; } = true;
+    public decimal SL_EntryBodyMinAtr { get; init; } = 0.25m;
+    public decimal SL_StopAtrBuffer { get; init; } = 0.3m;
+    public decimal SL_RewardRatio { get; init; } = 2.0m;
 
-    // Momentum enhancements
-    public decimal MomentumRewardRatio { get; init; } = 2.5m;
-    public int MomentumPullbackWindowBars { get; init; } = 10;
-    public decimal MomentumAvgBodyAtrRatio { get; init; } = 0.6m;
-    public int MomentumMaxModerate { get; init; } = 1;
-    public decimal MomentumModerateMinRatio { get; init; } = 0.4m;
-    public decimal MomentumPullbackMinRetrace { get; init; } = 0.25m;
-    public decimal MomentumPullbackMaxRetrace { get; init; } = 0.75m;
+    // BrooksPA
+    public decimal BrooksPA_SignalBarBodyRatio { get; init; } = 0.5m;
+    public decimal BrooksPA_MinBarRangeAtr { get; init; } = 0.3m;
+    public int BrooksPA_PullbackLookback { get; init; } = 20;
+    public decimal BrooksPA_EmaToleranceAtr { get; init; } = 0.75m;
+    public decimal BrooksPA_RewardRatio { get; init; } = 2.0m;
+    public int BrooksPA_MaxStopTicks { get; init; } = 40;
 
-    // FiftyPctPullback
+    // Shared risk
     public decimal MaxStopPoints { get; init; } = 10m;
-    public int BigMoveStaleBars { get; init; } = 20;
-    public decimal FiftyPctRetracementMin { get; init; } = 0.30m;
-    public decimal FiftyPctRetracementMax { get; init; } = 0.55m;
-    public decimal FiftyPctEntryBodyMinAtr { get; init; } = 0.25m;
 
     // Global filters
     public bool EnableTimeFilter { get; init; } = true;
@@ -78,5 +76,5 @@ public sealed class MultiStrategyConfig
 
     // Break-even stop
     public bool EnableBreakEvenStop { get; init; } = true;
-    public decimal BreakEvenActivationR { get; init; } = 1.0m;
+    public decimal BreakEvenActivationR { get; init; } = 1.2m;
 }

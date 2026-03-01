@@ -9,8 +9,8 @@ namespace SwingDayTradingPlatform.UI.Wpf.Controls;
 
 public sealed class EquityCurveCanvas : Canvas
 {
-    private const double PriceAxisWidth = 80;
-    private const double TimeAxisHeight = 28;
+    private const double PriceAxisWidth = 90;
+    private const double TimeAxisHeight = 34;
     private const double TopPadding = 10;
 
     private Point _mousePosition;
@@ -38,7 +38,7 @@ public sealed class EquityCurveCanvas : Canvas
     private static readonly Pen ZeroLinePen;
     private static readonly Pen EmptyDecoPen;
     private static readonly Brush AxisBrush = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B));
-    private static readonly Brush EmptySubtitleBrush = new SolidColorBrush(Color.FromRgb(0x4A, 0x4A, 0x68));
+    private static readonly Brush EmptySubtitleBrush = new SolidColorBrush(Color.FromRgb(0x7A, 0x7A, 0x98));
     private static readonly Brush CrosshairLabelBg = new SolidColorBrush(Color.FromArgb(210, 0x1B, 0x30, 0x44));
     private static readonly Brush EndpointLabelBg = new SolidColorBrush(Color.FromArgb(200, 0x38, 0xBD, 0xF8));
     private static readonly Brush ProfitFillBrush;
@@ -57,7 +57,7 @@ public sealed class EquityCurveCanvas : Canvas
         ChartBg.Freeze();
         EquityPen.Freeze();
         EquityGlowPen.Freeze();
-        YearBoundaryPen = new Pen(new SolidColorBrush(Color.FromArgb(35, 0xFF, 0xFF, 0xFF)), 1) { DashStyle = DashStyles.DashDot };
+        YearBoundaryPen = new Pen(new SolidColorBrush(Color.FromArgb(50, 0xFF, 0xFF, 0xFF)), 1) { DashStyle = DashStyles.DashDot };
         YearBoundaryPen.Freeze();
         DrawdownPen.Freeze();
         DrawdownFill.Freeze();
@@ -82,7 +82,7 @@ public sealed class EquityCurveCanvas : Canvas
         HighWatermarkPen = new Pen(new SolidColorBrush(Color.FromArgb(40, 0x38, 0xBD, 0xF8)), 1) { DashStyle = DashStyles.Dot };
         HighWatermarkPen.Freeze();
 
-        GridPen = new Pen(new SolidColorBrush(Color.FromArgb(25, 255, 255, 255)), 1) { DashStyle = DashStyles.Dot };
+        GridPen = new Pen(new SolidColorBrush(Color.FromArgb(35, 255, 255, 255)), 1) { DashStyle = DashStyles.Dot };
         GridPen.Freeze();
         CrosshairPen = new Pen(new SolidColorBrush(Color.FromArgb(100, 255, 255, 255)), 1) { DashStyle = DashStyles.Dash };
         CrosshairPen.Freeze();
@@ -169,7 +169,7 @@ public sealed class EquityCurveCanvas : Canvas
         {
             var y = PriceToY(p);
             dc.DrawLine(GridPen, new Point(0, y), new Point(chartW, y));
-            var ft = MakeText(p.ToString("N0"), 10, AxisBrush);
+            var ft = MakeText(p.ToString("N0"), 11, AxisBrush);
             dc.DrawText(ft, new Point(chartW + 6, y - ft.Height / 2));
 
             // Alternating band fill
@@ -189,7 +189,7 @@ public sealed class EquityCurveCanvas : Canvas
             if (startY >= TopPadding && startY <= TopPadding + chartH)
             {
                 dc.DrawLine(ZeroLinePen, new Point(0, startY), new Point(chartW, startY));
-                var startFt = MakeText($"Start ${curve[0].Equity:N0}", 8.5, AxisBrush);
+                var startFt = MakeText($"Start ${curve[0].Equity:N0}", 10, AxisBrush);
                 dc.DrawText(startFt, new Point(chartW - startFt.Width - 4, startY + 2));
             }
         }
@@ -216,7 +216,7 @@ public sealed class EquityCurveCanvas : Canvas
             {
                 var bx = IndexToX(i);
                 dc.DrawLine(YearBoundaryPen, new Point(bx, TopPadding), new Point(bx, TopPadding + chartH));
-                var yearFt = MakeText(curve[i].Timestamp.ToString("yyyy"), 9, AxisBrush);
+                var yearFt = MakeText(curve[i].Timestamp.ToString("yyyy"), 10, AxisBrush);
                 dc.DrawText(yearFt, new Point(bx + 3, TopPadding + 2));
             }
             else if (curve[i].Timestamp.Month != curve[i - 1].Timestamp.Month &&
@@ -355,7 +355,7 @@ public sealed class EquityCurveCanvas : Canvas
             var endX = IndexToX(curve.Count - 1);
             var endY = PriceToY(lastEquity);
             var endLabel = $"${lastEquity:N0}";
-            var endFt = MakeText(endLabel, 10.5, Brushes.White);
+            var endFt = MakeText(endLabel, 12, Brushes.White);
             // Glow ring
             dc.DrawEllipse(null, EquityGlowPen, new Point(endX, endY), 8, 8);
             // Solid dot
@@ -378,15 +378,15 @@ public sealed class EquityCurveCanvas : Canvas
             var returnSign = totalReturn >= 0 ? "+" : "";
             var returnColor = totalReturn >= 0 ? ProfitValueBrush : LossValueBrush;
 
-            var metLine1 = MakeText("Return", 9, MetricLabelBrush);
+            var metLine1 = MakeText("Return", 10, MetricLabelBrush);
             var metVal1 = MakeText($"{returnSign}{totalReturn:F1}%", 12, returnColor);
-            var metLine2 = MakeText("Max DD", 9, MetricLabelBrush);
+            var metLine2 = MakeText("Max DD", 10, MetricLabelBrush);
             var metVal2 = MakeText($"-{maxDD:F1}%", 12, LossValueBrush);
-            var metLine3 = MakeText("P&L", 9, MetricLabelBrush);
+            var metLine3 = MakeText("P&L", 10, MetricLabelBrush);
             var pnlSign = lastEquity >= startEquity ? "+" : "";
             var metVal3 = MakeText($"{pnlSign}${lastEquity - startEquity:N0}", 12, returnColor);
 
-            var metLine4 = MakeText("Period", 9, MetricLabelBrush);
+            var metLine4 = MakeText("Period", 10, MetricLabelBrush);
             var periodStr = $"{curve[0].Timestamp:MMM yy} – {curve[curve.Count - 1].Timestamp:MMM yy}";
             var metVal4 = MakeText(periodStr, 10, AxisBrush);
 
@@ -418,7 +418,7 @@ public sealed class EquityCurveCanvas : Canvas
                 var label = isJan
                     ? curve[i].Timestamp.ToString("MMM yyyy")
                     : curve[i].Timestamp.ToString("MMM");
-                var ft = MakeText(label, isJan ? 10 : 9.5, isJan ? Brushes.White : AxisBrush);
+                var ft = MakeText(label, isJan ? 11 : 10.5, isJan ? Brushes.White : AxisBrush);
                 dc.DrawText(ft, new Point(x, timeY));
                 lastMonth = month;
             }
@@ -434,7 +434,7 @@ public sealed class EquityCurveCanvas : Canvas
                 var y = PriceToY(p);
                 var retPct = (p - startEquity) / startEquity * 100;
                 var retSign = retPct >= 0 ? "+" : "";
-                var retFt = MakeText($"{retSign}{retPct:F0}%", 8.5, ReturnPctBrush);
+                var retFt = MakeText($"{retSign}{retPct:F0}%", 10, ReturnPctBrush);
                 dc.DrawText(retFt, new Point(chartW + PriceAxisWidth - retFt.Width - 2, y - retFt.Height / 2 + 8));
             }
         }
@@ -447,27 +447,27 @@ public sealed class EquityCurveCanvas : Canvas
 
             var crossEquity = maxEquity - (decimal)((_mousePosition.Y - TopPadding) / chartH) * range;
             var priceLabel = crossEquity.ToString("N2");
-            var priceFt = MakeText(priceLabel, 11, Brushes.White);
+            var priceFt = MakeText(priceLabel, 12, Brushes.White);
             dc.DrawRoundedRectangle(CrosshairLabelBg, null,
-                new Rect(chartW + 2, _mousePosition.Y - 9, PriceAxisWidth - 4, 18), 4, 4);
-            dc.DrawText(priceFt, new Point(chartW + 6, _mousePosition.Y - 7));
+                new Rect(chartW + 2, _mousePosition.Y - 10, PriceAxisWidth - 4, 20), 4, 4);
+            dc.DrawText(priceFt, new Point(chartW + 6, _mousePosition.Y - 8));
 
             var crossIdx = (int)(_mousePosition.X / chartW * (curve.Count - 1));
             crossIdx = Math.Clamp(crossIdx, 0, curve.Count - 1);
             var crossPoint = curve[crossIdx];
             var timeLabel = crossPoint.Timestamp.ToString("yyyy-MM-dd");
-            var timeFt = MakeText(timeLabel, 11, Brushes.White);
+            var timeFt = MakeText(timeLabel, 12, Brushes.White);
             dc.DrawRoundedRectangle(CrosshairLabelBg, null,
-                new Rect(_mousePosition.X - 38, TopPadding + chartH + 2, 76, 18), 4, 4);
-            dc.DrawText(timeFt, new Point(_mousePosition.X - 34, TopPadding + chartH + 4));
+                new Rect(_mousePosition.X - 40, TopPadding + chartH + 2, 80, 20), 4, 4);
+            dc.DrawText(timeFt, new Point(_mousePosition.X - 36, TopPadding + chartH + 4));
 
             // Show equity value + drawdown + return near cursor
             var crossReturn = startEquity != 0 ? (crossPoint.Equity - startEquity) / startEquity * 100 : 0;
             var crossRetSign = crossReturn >= 0 ? "+" : "";
             var infoLine1 = $"${crossPoint.Equity:N0}  {crossRetSign}{crossReturn:F1}%";
             var infoLine2 = $"DD: {crossPoint.DrawdownPct:F1}%  |  {crossPoint.Timestamp:MMM dd, yyyy}";
-            var infoFt1 = MakeText(infoLine1, 11, crossReturn >= 0 ? ProfitValueBrush : LossValueBrush);
-            var infoFt2 = MakeText(infoLine2, 9.5, AxisBrush);
+            var infoFt1 = MakeText(infoLine1, 12, crossReturn >= 0 ? ProfitValueBrush : LossValueBrush);
+            var infoFt2 = MakeText(infoLine2, 10.5, AxisBrush);
             var infoW = Math.Max(infoFt1.Width, infoFt2.Width) + 16;
             var infoH = infoFt1.Height + infoFt2.Height + 8;
             var infoX = _mousePosition.X + 14;

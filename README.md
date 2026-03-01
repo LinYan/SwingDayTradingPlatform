@@ -37,34 +37,33 @@ Trend-following pullback entry after swing confirmation.
 
 - **Long:** EMA20 > EMA50, close >= VWAP, higher-low pattern near EMA20
 - **Short:** EMA20 < EMA50, close <= VWAP, lower-high pattern near EMA20
+- Filters: EMA slope, RSI range, body size (ATR-based)
 - **Exit:** ATR trailing stop + configurable R:R target (default 2.0x)
 
-### Strategy 2: S/R Level Reversal
+### Strategy 5: EMA Pullback Bar Break
 
-Mean-reversion at tested support/resistance levels.
+Same entry logic as EMA Pullback but with bar-break exit management.
 
-- Swing points detected with 3-bar left, 1-bar right confirmation
-- Nearby swings clustered into S/R levels (0.5x ATR tolerance)
-- Entry requires minimum touch count + reversal candle (pin bar or engulfing)
-- **Exit:** ATR trailing stop + R:R target (default 2.0x)
+- Entry conditions match EMA Pullback (trend, VWAP, swing pattern, slope/RSI filters)
+- **Exit:** Break of previous bar's low (long) or high (short) instead of fixed R:R target
 
-### Strategy 3: 50% Pullback Reversal
+### Strategy 7: Second Leg
 
-Reversion-to-mean after extreme moves.
+Captures the second impulse leg after a pullback to the mean.
 
-- Detects big moves (range > 3x ATR over 5-20 bars)
-- Enters on 25-60% retracement with swing confirmation
-- Target is the 50% retracement level (midpoint of big move)
-- Staleness filter: ignores big moves older than 30 bars
-- Rejects stops > max stop points or < 1.5x R:R
+- Requires a first-leg impulse move (>= Nx ATR)
+- Enters on 25-75% retracement back to EMA20/VWAP with bullish/bearish confirmation bar
+- Optional fake-breakout detection for higher-probability entries
+- **Exit:** R:R target (default 2.0x), stop at pullback extreme + ATR buffer
 
-### Strategy 4: Momentum Pullback
+### Strategy 9: Brooks Price Action
 
-Captures secondary impulse after initial momentum burst.
+Al Brooks-style price action patterns in the trend direction.
 
-- Phase 1: Detects 3+ consecutive bars with body > 0.7x ATR, same direction
-- Phase 2: Entry on pullback within 6 bars (price pulls back then closes in burst direction)
-- **Exit:** ATR trailing stop + R:R target (default 2.5x)
+- Determines "always-in" direction from EMA20/EMA50 alignment
+- **ii Breakout:** Two consecutive inside bars forming compression, breakout in trend direction
+- **H2/L2 Pullback:** Two-legged pullback near EMA20 with signal bar closing in trend direction
+- **Exit:** Measured-move target or R:R target (whichever is more conservative), stop one tick beyond signal bar
 
 ### Shared exit mechanisms
 
@@ -151,7 +150,7 @@ dotnet test
 
 The test suite covers:
 
-- All 4 strategy evaluation methods
+- Strategy evaluation (EMA Pullback, EMA Bar Break, Second Leg, Brooks PA)
 - Backtest engine lifecycle and metrics
 - Pattern detection (swings, S/R clustering, reversal candles, bar-break/reversal exits)
 - Indicators (EMA, ATR, VWAP)

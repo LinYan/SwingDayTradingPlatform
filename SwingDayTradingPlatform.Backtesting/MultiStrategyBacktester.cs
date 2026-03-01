@@ -5,22 +5,37 @@ namespace SwingDayTradingPlatform.Backtesting;
 public static class MultiStrategyBacktester
 {
     private static readonly string[] StrategyNames =
-        ["EmaPullback", "SRReversal", "FiftyPctPullback", "Momentum"];
+        ["EmaPullback", "EmaPullbackBarBreak", "SecondLeg", "BrooksPA"];
 
     public static Dictionary<string, BacktestResult> RunAllStrategies(
         List<MarketBar> bars,
         BacktestParameters parameters,
         BacktestConfig config,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Action<double>? onProgress = null,
+        Action<string>? onStatus = null)
     {
         var results = new Dictionary<string, BacktestResult>();
+        var totalStrategies = StrategyNames.Length;
 
-        foreach (var strategyName in StrategyNames)
+        for (var s = 0; s < totalStrategies; s++)
         {
             ct.ThrowIfCancellationRequested();
+            var strategyName = StrategyNames[s];
+            var strategyIndex = s;
+
+            onStatus?.Invoke($"Running {strategyName} ({s + 1}/{totalStrategies})...");
+
+            // Map each engine's 0-100 into this strategy's slice of overall progress
+            Action<double>? subProgress = onProgress is not null
+                ? pct => onProgress(((double)strategyIndex + pct / 100.0) / totalStrategies * 100)
+                : null;
+
             var engine = new BacktestEngine(strategyName);
-            var result = engine.Run(bars, parameters, config, ct);
+            var result = engine.Run(bars, parameters, config, ct, subProgress);
             results[strategyName] = result;
+
+            onProgress?.Invoke((double)(s + 1) / totalStrategies * 100);
         }
 
         return results;

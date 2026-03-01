@@ -22,7 +22,6 @@ public sealed class MarketContext
     private decimal _cumPriceVolume;
     private decimal _cumVolume;
 
-
     public MarketContext(MultiStrategyConfig config)
     {
         _config = config;
@@ -36,7 +35,6 @@ public sealed class MarketContext
     public decimal Atr14 { get; private set; }
     public decimal Vwap { get; private set; }
     public decimal Rsi14 { get; private set; }
-    public (PositionSide Direction, decimal StopPrice, int DetectedAtIndex)? PendingMomentumSetup { get; set; }
     public IReadOnlyList<MarketBar> HourlyBars => _hourlyBars;
     public decimal RangeHigh { get; private set; }
     public decimal RangeLow { get; private set; }
@@ -132,7 +130,6 @@ public sealed class MarketContext
         _cumPriceVolume = 0;
         _cumVolume = 0;
         Vwap = 0;
-        PendingMomentumSetup = null;
     }
 
     /// <summary>
@@ -184,19 +181,19 @@ public sealed class MarketContext
         var closeTime = _pendingHourlyCandles[^1].CloseTimeUtc;
         var hourlyBar = new MarketBar(openTime, closeTime, open, high, low, close, volume);
 
-        // Replace or add: if last entry is same hour, replace; otherwise add
-        if (_hourlyBars.Count > 0 && barHour == _currentHourBoundary &&
-            _pendingHourlyCandles.Count > 1)
-        {
-            _hourlyBars[^1] = hourlyBar;
-        }
-        else if (_pendingHourlyCandles.Count == 1)
+        // Replace or add: first candle of new hour adds, subsequent candles replace
+        if (_pendingHourlyCandles.Count == 1)
         {
             _hourlyBars.Add(hourlyBar);
         }
-        else
+        else if (_hourlyBars.Count > 0)
         {
             _hourlyBars[^1] = hourlyBar;
+        }
+        else
+        {
+            // Safety fallback: should not happen, but avoid IndexOutOfRangeException
+            _hourlyBars.Add(hourlyBar);
         }
     }
 

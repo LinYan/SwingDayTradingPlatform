@@ -14,7 +14,7 @@ public sealed class ChartCanvas : Canvas
     private const double DefaultBarWidth = 8;
     private const double BarGap = 2;
     private const double PriceAxisWidth = 70;
-    private const double TimeAxisHeight = 28;
+    private const double TimeAxisHeight = 34;
     private const double TopPadding = 10;
     private const double VolumePanelRatio = 0.18;
 
@@ -119,7 +119,7 @@ public sealed class ChartCanvas : Canvas
     private static readonly Pen ExitMarkerPenShort = new(new SolidColorBrush(Color.FromRgb(0xFB, 0xBF, 0x24)), 2.0);
     private static readonly Pen ExitGlowPenLong;
     private static readonly Pen ExitGlowPenShort;
-    private static readonly Brush EmptySubtitleBrush = new SolidColorBrush(Color.FromRgb(0x4A, 0x4A, 0x68));
+    private static readonly Brush EmptySubtitleBrush = new SolidColorBrush(Color.FromRgb(0x7A, 0x7A, 0x98));
     private static readonly Brush LegendBg = new SolidColorBrush(Color.FromArgb(150, 0x1E, 0x1E, 0x2E));
     private static readonly Brush BarHighlightBrush = new SolidColorBrush(Color.FromArgb(25, 0x38, 0xBD, 0xF8));
     private static readonly Brush EmaFillBullBrush = new SolidColorBrush(Color.FromArgb(20, 0x09, 0x84, 0xE3));
@@ -130,8 +130,8 @@ public sealed class ChartCanvas : Canvas
     private static readonly Brush BearGradientTop;
     private static readonly Pen EmptyDecoPen;
     private static readonly Pen HighLowDashPen;
-    private static readonly Brush HighLabelBrush = new SolidColorBrush(Color.FromArgb(160, 0x00, 0xB8, 0x94));
-    private static readonly Brush LowLabelBrush = new SolidColorBrush(Color.FromArgb(160, 0xE1, 0x70, 0x55));
+    private static readonly Brush HighLabelBrush = new SolidColorBrush(Color.FromArgb(220, 0x00, 0xB8, 0x94));
+    private static readonly Brush LowLabelBrush = new SolidColorBrush(Color.FromArgb(220, 0xE1, 0x70, 0x55));
     private static readonly Brush ScrollIndicatorBg = new SolidColorBrush(Color.FromArgb(120, 0x16, 0x16, 0x2E));
     private static readonly Brush ScrollIndicatorFg = new SolidColorBrush(Color.FromArgb(80, 0x38, 0xBD, 0xF8));
     private static readonly Brush CrossoverBullBrush = new SolidColorBrush(Color.FromArgb(200, 0x00, 0xB8, 0x94));
@@ -210,7 +210,7 @@ public sealed class ChartCanvas : Canvas
         ScrollIndicatorFg.Freeze();
         CrossoverBullBrush.Freeze();
         CrossoverBearBrush.Freeze();
-        EntryGlowPen = new Pen(new SolidColorBrush(Color.FromArgb(60, 0x38, 0xBD, 0xF8)), 4);
+        EntryGlowPen = new Pen(new SolidColorBrush(Color.FromArgb(80, 0x38, 0xBD, 0xF8)), 6);
         EntryGlowPen.Freeze();
     }
 
@@ -347,7 +347,7 @@ public sealed class ChartCanvas : Canvas
             Background = new SolidColorBrush(Color.FromArgb(230, 0x1B, 0x30, 0x44)),
             BorderBrush = new SolidColorBrush(Color.FromRgb(0x38, 0xBD, 0xF8)),
             BorderThickness = new Thickness(1),
-            Padding = new Thickness(10, 6, 10, 6),
+            Padding = new Thickness(12, 8, 12, 8),
             Effect = new DropShadowEffect { BlurRadius = 12, ShadowDepth = 2, Opacity = 0.4, Color = Colors.Black },
             Child = new TextBlock
             {
@@ -536,7 +536,7 @@ public sealed class ChartCanvas : Canvas
             {
                 dc.DrawLine(CurrentPricePen, new Point(0, lastY), new Point(chartW, lastY));
                 var lastLabel = lastBar.Close.ToString("F2");
-                var lastFt = MakeText(lastLabel, 10.5, Brushes.White);
+                var lastFt = MakeText(lastLabel, 12, Brushes.White);
                 dc.DrawRoundedRectangle(CurrentPriceLabelBg, null,
                     new Rect(chartW + 1, lastY - 9, PriceAxisWidth - 2, 18), 3, 3);
                 dc.DrawText(lastFt, new Point(chartW + 4, lastY - 7));
@@ -558,10 +558,10 @@ public sealed class ChartCanvas : Canvas
             dc.DrawLine(HighLowDashPen, new Point(0, hiY), new Point(chartW, hiY));
             dc.DrawLine(HighLowDashPen, new Point(0, loY), new Point(chartW, loY));
             // High label
-            var hiFt = MakeText($"H {visHigh:F2}", 8.5, HighLabelBrush);
+            var hiFt = MakeText($"H {visHigh:F2}", 10.5, HighLabelBrush);
             dc.DrawText(hiFt, new Point(IndexToX(hiIdx) + effectiveBarW, hiY - hiFt.Height));
             // Low label
-            var loFt = MakeText($"L {visLow:F2}", 8.5, LowLabelBrush);
+            var loFt = MakeText($"L {visLow:F2}", 10.5, LowLabelBrush);
             dc.DrawText(loFt, new Point(IndexToX(loIdx) + effectiveBarW, loY + 1));
         }
 
@@ -599,14 +599,14 @@ public sealed class ChartCanvas : Canvas
                 var changePct = cb.Open != 0 ? change / cb.Open * 100 : 0;
                 var changeSign = change >= 0 ? "+" : "";
 
-                var timeFt = MakeText(TimeZoneInfo.ConvertTime(cb.OpenTimeUtc, EasternTz).ToString("yyyy-MM-dd HH:mm") + " ET", 9.5, AxisBrush);
+                var timeFt = MakeText(TimeZoneInfo.ConvertTime(cb.OpenTimeUtc, EasternTz).ToString("yyyy-MM-dd HH:mm") + " ET", 10.5, AxisBrush);
                 var ohlcvLine1 = $"O {cb.Open:F2}   H {cb.High:F2}   L {cb.Low:F2}   C {cb.Close:F2}";
                 var ohlcvLine2 = $"Vol {cb.Volume:N0}   Chg {changeSign}{change:F2} ({changeSign}{changePct:F2}%)";
-                var ohlcvFt1 = MakeText(ohlcvLine1, 10.5, priceColor);
-                var ohlcvFt2 = MakeText(ohlcvLine2, 9.5, priceColor);
+                var ohlcvFt1 = MakeText(ohlcvLine1, 11.5, priceColor);
+                var ohlcvFt2 = MakeText(ohlcvLine2, 10.5, priceColor);
 
-                var panelW = Math.Max(Math.Max(ohlcvFt1.Width, ohlcvFt2.Width), timeFt.Width) + 16;
-                var panelH = timeFt.Height + ohlcvFt1.Height + ohlcvFt2.Height + 12;
+                var panelW = Math.Max(Math.Max(ohlcvFt1.Width, ohlcvFt2.Width), timeFt.Width) + 20;
+                var panelH = timeFt.Height + ohlcvFt1.Height + ohlcvFt2.Height + 16;
                 dc.DrawRoundedRectangle(InfoPanelBg, InfoPanelBorder, new Rect(6, 2, panelW, panelH), 5, 5);
                 dc.DrawText(timeFt, new Point(14, 5));
                 dc.DrawText(ohlcvFt1, new Point(14, 5 + timeFt.Height + 1));
@@ -632,8 +632,8 @@ public sealed class ChartCanvas : Canvas
             var priceLabel = crossPrice.ToString("F2");
             var ft = MakeText(priceLabel, 11, Brushes.White);
             dc.DrawRoundedRectangle(CrosshairLabelBg, null,
-                new Rect(chartW + 2, _mousePosition.Y - 8, PriceAxisWidth - 4, 16), 4, 4);
-            dc.DrawText(ft, new Point(chartW + 4, _mousePosition.Y - 7));
+                new Rect(chartW + 2, _mousePosition.Y - 10, PriceAxisWidth - 4, 20), 4, 4);
+            dc.DrawText(ft, new Point(chartW + 4, _mousePosition.Y - 8));
 
             if (crossBarIdx >= startIndex && crossBarIdx < endIndex)
             {
@@ -641,8 +641,8 @@ public sealed class ChartCanvas : Canvas
                 var timeLabel = TimeZoneInfo.ConvertTime(crossBar.OpenTimeUtc, EasternTz).ToString("HH:mm");
                 var timeFt = MakeText(timeLabel, 11, Brushes.White);
                 dc.DrawRoundedRectangle(CrosshairLabelBg, null,
-                    new Rect(snappedX - 20, TopPadding + chartH + 2, 40, 16), 4, 4);
-                dc.DrawText(timeFt, new Point(snappedX - 16, TopPadding + chartH + 3));
+                    new Rect(snappedX - 24, TopPadding + chartH + 2, 48, 20), 4, 4);
+                dc.DrawText(timeFt, new Point(snappedX - 20, TopPadding + chartH + 4));
             }
         }
     }
@@ -664,7 +664,7 @@ public sealed class ChartCanvas : Canvas
         if (maxVolume == 0) return;
 
         // Volume label
-        var volLabel = MakeText($"Vol: {maxVolume:N0}", 8, AxisBrush);
+        var volLabel = MakeText($"Vol: {maxVolume:N0}", 10, AxisBrush);
         dc.DrawText(volLabel, new Point(4, volumeTop + 2));
 
         var volRadius = barWidth > 6 ? 1.5 : 0;
@@ -711,14 +711,14 @@ public sealed class ChartCanvas : Canvas
                 {
                     var x = indexToX(i);
                     var y = priceToY(marker.Price);
-                    var size = 6.0;
+                    var size = 10.0;
 
                     if (marker.IsEntry)
                     {
                         // Entry glow ring
-                        dc.DrawEllipse(null, EntryGlowPen, new Point(x, y), 8, 8);
+                        dc.DrawEllipse(null, EntryGlowPen, new Point(x, y), 14, 14);
 
-                        // Entry markers: filled triangles
+                        // Entry markers: filled triangles with outline
                         var tri = new StreamGeometry();
                         using (var ctx = tri.Open())
                         {
@@ -738,7 +738,10 @@ public sealed class ChartCanvas : Canvas
                             }
                         }
                         tri.Freeze();
-                        dc.DrawGeometry(marker.IsLong ? LongMarkerBrush : ShortMarkerBrush, null, tri);
+                        var entryBrush = marker.IsLong ? LongMarkerBrush : ShortMarkerBrush;
+                        var outlinePen = new Pen(Brushes.White, 1.5);
+                        outlinePen.Freeze();
+                        dc.DrawGeometry(entryBrush, outlinePen, tri);
                     }
                     else
                     {
@@ -892,8 +895,8 @@ public sealed class ChartCanvas : Canvas
 
         foreach (var (label, value, color, pen) in items)
         {
-            var labelFt = MakeText(label, 9, color);
-            var valueFt = value != null ? MakeText($" {value}", 9, Brushes.White) : null;
+            var labelFt = MakeText(label, 10.5, color);
+            var valueFt = value != null ? MakeText($" {value}", 10.5, Brushes.White) : null;
             var lineW = 14;
             var itemW = lineW + 4 + labelFt.Width + (valueFt?.Width ?? 0) + 8;
             var itemX = x - itemW;
@@ -932,7 +935,7 @@ public sealed class ChartCanvas : Canvas
         for (var p = firstGrid; p <= maxPrice; p += gridStep)
         {
             var y = priceToY(p);
-            var ft = MakeText(p.ToString("F2"), 10, AxisBrush);
+            var ft = MakeText(p.ToString("F2"), 11, AxisBrush);
             dc.DrawText(ft, new Point(chartW + 4, y - ft.Height / 2));
         }
     }
@@ -959,13 +962,13 @@ public sealed class ChartCanvas : Canvas
             {
                 var label = localTime.ToString("MMM dd");
                 labeledDates.Add(barDate);
-                var dateFt = MakeText(label, 10, Brushes.White);
+                var dateFt = MakeText(label, 11, Brushes.White);
                 dc.DrawText(dateFt, new Point(x - dateFt.Width / 2, y));
             }
             else
             {
                 var label = localTime.ToString("HH:mm");
-                var ft = MakeText(label, 9.5, AxisBrush);
+                var ft = MakeText(label, 10.5, AxisBrush);
                 dc.DrawText(ft, new Point(x - ft.Width / 2, y + 1));
             }
         }
@@ -1029,7 +1032,9 @@ public sealed class ChartCanvas : Canvas
                     var isLong = signal.Direction == PositionSide.Long;
                     var price = isLong ? bars[i].Low : bars[i].High;
                     var y = priceToY(price);
-                    var markerSize = 6.0;
+                    var markerSize = 10.0;
+                    var signalOutline = new Pen(Brushes.White, 1.5);
+                    signalOutline.Freeze();
 
                     if (isLong)
                     {
@@ -1041,7 +1046,7 @@ public sealed class ChartCanvas : Canvas
                             ctx.LineTo(new Point(x + markerSize, y + markerSize * 2 + 4), true, false);
                         }
                         tri.Freeze();
-                        dc.DrawGeometry(LongMarkerBrush, null, tri);
+                        dc.DrawGeometry(LongMarkerBrush, signalOutline, tri);
                     }
                     else
                     {
@@ -1053,7 +1058,7 @@ public sealed class ChartCanvas : Canvas
                             ctx.LineTo(new Point(x + markerSize, y - markerSize * 2 - 4), true, false);
                         }
                         tri.Freeze();
-                        dc.DrawGeometry(ShortMarkerBrush, null, tri);
+                        dc.DrawGeometry(ShortMarkerBrush, signalOutline, tri);
                     }
                     break;
                 }
@@ -1070,7 +1075,7 @@ public sealed class ChartCanvas : Canvas
         if (idx < 0 || idx >= values.Count) return;
         var val = values[idx];
         var y = priceToY(val);
-        var ft = MakeText($"{name} {val:F2}", 8.5, color);
+        var ft = MakeText($"{name} {val:F2}", 10.5, color);
         var labelX = chartW - ft.Width - 4;
         dc.DrawText(ft, new Point(labelX, y - ft.Height - 1));
     }

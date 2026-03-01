@@ -35,22 +35,15 @@ public class BacktestParametersTests
             SlowEmaPeriod = 40,
             AtrPeriod = 10,
             EnableStrategy1 = false,
-            EnableStrategy2 = true,
             EnableHourlyBias = true,
             SwingLookback = 5,
-            MomentumBars = 6,
             TickSize = 0.5m,
             TrailingStopAtrMultiplier = 3.0m,
             TrailingStopActivationBars = 5,
             UseBarBreakExit = true,
             EmaPullbackRewardRatio = 1.5m,
             EmaPullbackTolerance = 0.5m,
-            SRMinTouches = 4,
-            SRReversalRewardRatio = 3.0m,
-            MomentumRewardRatio = 2.0m,
-            MomentumPullbackWindowBars = 8,
-            MaxStopPoints = 20m,
-            BigMoveStaleBars = 25
+            MaxStopPoints = 20m
         };
 
         var multi = p.ToMultiStrategyConfig();
@@ -59,22 +52,15 @@ public class BacktestParametersTests
         Assert.Equal(40, multi.SlowEmaPeriod);
         Assert.Equal(10, multi.AtrPeriod);
         Assert.False(multi.EnableStrategy1);
-        Assert.True(multi.EnableStrategy2);
         Assert.True(multi.EnableHourlyBias);
         Assert.Equal(5, multi.SwingLookback);
-        Assert.Equal(6, multi.MomentumBars);
         Assert.Equal(0.5m, multi.TickSize);
         Assert.Equal(3.0m, multi.TrailingStopAtrMultiplier);
         Assert.Equal(5, multi.TrailingStopActivationBars);
         Assert.True(multi.UseBarBreakExit);
         Assert.Equal(1.5m, multi.EmaPullbackRewardRatio);
         Assert.Equal(0.5m, multi.EmaPullbackTolerance);
-        Assert.Equal(4, multi.SRMinTouches);
-        Assert.Equal(3.0m, multi.SRReversalRewardRatio);
-        Assert.Equal(2.0m, multi.MomentumRewardRatio);
-        Assert.Equal(8, multi.MomentumPullbackWindowBars);
         Assert.Equal(20m, multi.MaxStopPoints);
-        Assert.Equal(25, multi.BigMoveStaleBars);
     }
 
     [Fact]
@@ -124,16 +110,19 @@ public class BacktestParametersTests
         Assert.Equal(50, p.SlowEmaPeriod);
         Assert.Equal(14, p.AtrPeriod);
         Assert.True(p.EnableStrategy1);
-        Assert.True(p.EnableStrategy2);
-        Assert.True(p.EnableStrategy3);
-        Assert.True(p.EnableStrategy4);
+        Assert.True(p.EnableStrategy5);
+        Assert.True(p.EnableStrategy7);
+        Assert.True(p.EnableStrategy9);
         Assert.Equal(0.25m, p.TickSize);
-        Assert.Equal(3, p.MomentumBars);
-        Assert.Equal(0.7m, p.MomentumBodyAtrRatio);
         Assert.Equal(10m, p.MaxStopPoints);
         Assert.Equal(2.0m, p.TrailingStopAtrMultiplier);
-        Assert.Equal(3, p.TrailingStopActivationBars);
+        Assert.Equal(4, p.TrailingStopActivationBars);
         Assert.False(p.UseBarBreakExit);
-        Assert.Equal(30, p.BigMoveStaleBars);
+        Assert.Equal(2, p.MinBarBreakHoldBars);
+        Assert.Equal(0.5m, p.EmaPullbackTolerance);
+        Assert.True(p.EnableTimeFilter);
+        Assert.True(p.EnableBreakEvenStop);
+        Assert.Equal(1.2m, p.BreakEvenActivationR);
+        Assert.Equal(6, p.MaxDailyTrades);
     }
 }

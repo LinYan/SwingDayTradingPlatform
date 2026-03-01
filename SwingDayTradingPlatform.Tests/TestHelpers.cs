@@ -85,27 +85,22 @@ public static class TestHelpers
         SlowEmaPeriod = 50,
         AtrPeriod = 14,
         EnableStrategy1 = true,
-        EnableStrategy2 = true,
-        EnableStrategy3 = true,
-        EnableStrategy4 = true,
+        EnableStrategy5 = true,
+        EnableStrategy7 = true,
+        EnableStrategy9 = true,
         EnableHourlyBias = false, // disable for simpler testing
+        EnableTimeFilter = false, // disable for simpler testing
+        EnableBreakEvenStop = false, // disable for simpler testing
         SwingLookback = 3,
         SRClusterAtrFactor = 0.5m,
         BigMoveAtrFactor = 3.0m,
-        MomentumBars = 3,
-        MomentumBodyAtrRatio = 0.7m,
         TickSize = 0.25m,
         TrailingStopAtrMultiplier = 2.0m,
         TrailingStopActivationBars = 3,
         UseBarBreakExit = false,
         EmaPullbackRewardRatio = 2.0m,
-        EmaPullbackTolerance = 0.75m,
-        SRMinTouches = 3,
-        SRReversalRewardRatio = 2.0m,
-        MomentumRewardRatio = 2.5m,
-        MomentumPullbackWindowBars = 6,
-        MaxStopPoints = 10m,
-        BigMoveStaleBars = 30
+        EmaPullbackTolerance = 0.5m,
+        MaxStopPoints = 10m
     };
 
     public static RiskConfig DefaultRiskConfig() => new()

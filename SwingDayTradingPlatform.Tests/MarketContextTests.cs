@@ -157,9 +157,8 @@ public class MarketContextTests
             FastEmaPeriod = baseConfig.FastEmaPeriod, SlowEmaPeriod = baseConfig.SlowEmaPeriod,
             AtrPeriod = baseConfig.AtrPeriod, SwingLookback = baseConfig.SwingLookback,
             SRClusterAtrFactor = baseConfig.SRClusterAtrFactor, BigMoveAtrFactor = baseConfig.BigMoveAtrFactor,
-            MomentumBars = baseConfig.MomentumBars, MomentumBodyAtrRatio = baseConfig.MomentumBodyAtrRatio,
             TickSize = baseConfig.TickSize, MaxStopPoints = baseConfig.MaxStopPoints,
-            BigMoveStaleBars = baseConfig.BigMoveStaleBars, EnableHourlyBias = true
+            EnableHourlyBias = true
         };
         var ctx = new MarketContext(config);
 
@@ -200,9 +199,8 @@ public class MarketContextTests
             FastEmaPeriod = baseConfig2.FastEmaPeriod, SlowEmaPeriod = baseConfig2.SlowEmaPeriod,
             AtrPeriod = baseConfig2.AtrPeriod, SwingLookback = baseConfig2.SwingLookback,
             SRClusterAtrFactor = baseConfig2.SRClusterAtrFactor, BigMoveAtrFactor = baseConfig2.BigMoveAtrFactor,
-            MomentumBars = baseConfig2.MomentumBars, MomentumBodyAtrRatio = baseConfig2.MomentumBodyAtrRatio,
             TickSize = baseConfig2.TickSize, MaxStopPoints = baseConfig2.MaxStopPoints,
-            BigMoveStaleBars = baseConfig2.BigMoveStaleBars, EnableHourlyBias = true
+            EnableHourlyBias = true
         };
         var ctx = new MarketContext(config);
 

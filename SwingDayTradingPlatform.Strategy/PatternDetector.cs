@@ -363,6 +363,17 @@ public static class PatternDetector
     }
 
     /// <summary>
+    /// ABCD exit: long exits when bar is bearish AND closes below previous bar's low;
+    /// short exits when bar is bullish AND closes above previous bar's high.
+    /// </summary>
+    public static bool CheckCloseBeyondPrevBarExit(MarketBar bar, MarketBar prevBar, PositionSide direction)
+    {
+        return direction == PositionSide.Long
+            ? bar.Close < bar.Open && bar.Close < prevBar.Low
+            : bar.Close > bar.Open && bar.Close > prevBar.High;
+    }
+
+    /// <summary>
     /// Reversal bar exit: long exits when bar closes below its open (bearish bar);
     /// short exits when bar closes above its open (bullish bar).
     /// </summary>

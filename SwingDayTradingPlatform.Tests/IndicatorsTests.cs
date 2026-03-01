@@ -98,6 +98,49 @@ public class IndicatorsTests
     }
 
     [Fact]
+    public void Rsi_InsufficientData_Returns50()
+    {
+        var bars = TestHelpers.GenerateBars(5);
+        Assert.Equal(50m, Indicators.Rsi(bars, 14));
+    }
+
+    [Fact]
+    public void Rsi_AllGains_Returns100()
+    {
+        // Monotonically increasing prices: RSI should be 100
+        var bars = new List<Shared.MarketBar>();
+        for (var i = 0; i < 30; i++)
+        {
+            var price = 100m + i * 2m;
+            bars.Add(TestHelpers.MakeBar(price - 1, price + 1, price - 2, price, minutesOffset: i * 5));
+        }
+        var rsi = Indicators.Rsi(bars, 14);
+        Assert.Equal(100m, rsi);
+    }
+
+    [Fact]
+    public void Rsi_AllLosses_Returns0()
+    {
+        // Monotonically decreasing prices: RSI should be 0
+        var bars = new List<Shared.MarketBar>();
+        for (var i = 0; i < 30; i++)
+        {
+            var price = 200m - i * 2m;
+            bars.Add(TestHelpers.MakeBar(price + 1, price + 2, price - 1, price, minutesOffset: i * 5));
+        }
+        var rsi = Indicators.Rsi(bars, 14);
+        Assert.Equal(0m, rsi);
+    }
+
+    [Fact]
+    public void Rsi_MixedData_InValidRange()
+    {
+        var bars = TestHelpers.GenerateWarmupBars(60);
+        var rsi = Indicators.Rsi(bars, 14);
+        Assert.True(rsi >= 0m && rsi <= 100m, $"RSI {rsi} should be in [0, 100]");
+    }
+
+    [Fact]
     public void SessionVwap_ResetsOnNewDay()
     {
         var tz = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");

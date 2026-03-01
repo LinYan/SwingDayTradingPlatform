@@ -75,9 +75,9 @@ public sealed class PnLCalendarCanvas : FrameworkElement
     // Colors — modern flat palette
     private static readonly Brush BgBrush = new SolidColorBrush(Color.FromRgb(0xFA, 0xFA, 0xF8));
     private static readonly Brush HeaderBg;
-    private static readonly Brush GreenBg = new SolidColorBrush(Color.FromArgb(45, 0x0F, 0x9D, 0x7A));
-    private static readonly Brush RedBg = new SolidColorBrush(Color.FromArgb(45, 0xC4, 0x4B, 0x3B));
-    private static readonly Brush GrayBg = new SolidColorBrush(Color.FromArgb(20, 0x64, 0x74, 0x8B));
+    private static readonly Brush GreenBg = new SolidColorBrush(Color.FromArgb(65, 0x0F, 0x9D, 0x7A));
+    private static readonly Brush RedBg = new SolidColorBrush(Color.FromArgb(65, 0xC4, 0x4B, 0x3B));
+    private static readonly Brush GrayBg = new SolidColorBrush(Color.FromArgb(35, 0x64, 0x74, 0x8B));
     private static readonly Brush HoverOverlay = new SolidColorBrush(Color.FromArgb(30, 0x2B, 0x6C, 0xB0));
     private static readonly Brush GreenTextBrush = new SolidColorBrush(Color.FromRgb(0x05, 0x7A, 0x5E));
     private static readonly Brush RedTextBrush = new SolidColorBrush(Color.FromRgb(0xB9, 0x3C, 0x2C));
@@ -413,7 +413,7 @@ public sealed class PnLCalendarCanvas : FrameworkElement
             var row = idx / 7;
             var x = col * cellW;
             var y = headerH + dayHeaderH + row * cellH;
-            var cellRect = new Rect(x + 1, y + 1, cellW - 2, cellH - 2);
+            var cellRect = new Rect(x + 2, y + 2, cellW - 4, cellH - 4);
             var date = new DateOnly(DisplayYear, DisplayMonth, day);
 
             // Background coloring with intensity based on P&L magnitude
@@ -421,7 +421,7 @@ public sealed class PnLCalendarCanvas : FrameworkElement
             {
                 if (maxAbsPnL > 0 && summary.PnLDollars != 0)
                 {
-                    var intensity = (byte)Math.Clamp((double)(Math.Abs(summary.PnLDollars) / maxAbsPnL) * 55 + 20, 20, 75);
+                    var intensity = (byte)Math.Clamp((double)(Math.Abs(summary.PnLDollars) / maxAbsPnL) * 105 + 35, 35, 140);
                     var bg = summary.PnLDollars > 0
                         ? new SolidColorBrush(Color.FromArgb(intensity, 0x0F, 0x9D, 0x7A))
                         : new SolidColorBrush(Color.FromArgb(intensity, 0xC4, 0x4B, 0x3B));
@@ -469,21 +469,21 @@ public sealed class PnLCalendarCanvas : FrameworkElement
             var dayOfWeek = new DateTime(DisplayYear, DisplayMonth, day).DayOfWeek;
             var isWeekday = dayOfWeek != DayOfWeek.Saturday && dayOfWeek != DayOfWeek.Sunday;
             var dayText = MakeText(day.ToString(), dayNumSize, DayNumBrush, UiTypeface, FontWeights.SemiBold);
-            dc.DrawText(dayText, new Point(x + 6, y + 4));
+            dc.DrawText(dayText, new Point(x + 8, y + 6));
 
             // P&L info
             if (lookup.TryGetValue(date, out var s))
             {
                 // Trade count badge — top-right (skip if today dot is there)
-                var countX = date == today ? x + cellW - 20 : x + cellW - 6;
+                var countX = date == today ? x + cellW - 22 : x + cellW - 8;
                 var countText = MakeText($"{s.TradeCount}T", countSize, SubtleBrush, MonoTypeface);
-                dc.DrawText(countText, new Point(countX - countText.Width, y + 4));
+                dc.DrawText(countText, new Point(countX - countText.Width, y + 6));
 
                 // P&L amount — centered
                 var pnlColor = s.PnLDollars >= 0 ? GreenTextBrush : RedTextBrush;
                 var sign = s.PnLDollars >= 0 ? "+" : "";
                 var pnlText = MakeText($"{sign}${s.PnLDollars:N0}", pnlSize, pnlColor, MonoTypeface, FontWeights.Bold);
-                dc.DrawText(pnlText, new Point(x + cellW / 2 - pnlText.Width / 2, y + cellH / 2 - pnlText.Height / 2 - 1));
+                dc.DrawText(pnlText, new Point(x + cellW / 2 - pnlText.Width / 2, y + cellH / 2 - pnlText.Height / 2 - 2));
 
                 // P&L magnitude bar — thin bar between P&L text and W-L (skip when compact)
                 if (!isCompact && maxAbsPnL > 0)
@@ -492,7 +492,7 @@ public sealed class PnLCalendarCanvas : FrameworkElement
                     var barW = (double)(Math.Abs(s.PnLDollars) / maxAbsPnL) * barMaxW;
                     if (barW > 2)
                     {
-                        var barH = 4.0;
+                        var barH = 5.0;
                         var barX = x + cellW / 2 - barW / 2;
                         var barY = y + cellH / 2 + 12;
                         var barBrush = s.PnLDollars >= 0 ? PnlBarGreen : PnlBarRed;
@@ -502,7 +502,7 @@ public sealed class PnLCalendarCanvas : FrameworkElement
 
                 // W-L — bottom
                 var wlText = MakeText($"{s.Wins}W {s.Losses}L", wlSize, SubtleBrush, MonoTypeface);
-                dc.DrawText(wlText, new Point(x + cellW / 2 - wlText.Width / 2, y + cellH - wlText.Height - 4));
+                dc.DrawText(wlText, new Point(x + cellW / 2 - wlText.Width / 2, y + cellH - wlText.Height - 6));
 
                 // Streak dots — small dots at bottom showing streak length (skip when compact)
                 if (!isCompact && streaks.TryGetValue(date, out var streak) && Math.Abs(streak) >= 2)

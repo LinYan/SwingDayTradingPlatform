@@ -21,4 +21,7 @@ public sealed class ActiveTradeContext
     // Break-even stop
     public decimal RiskAmount { get; init; }
     public bool BreakEvenActivated { get; set; }
+
+    // Per-trade bar-break exit (used by strategies that require bar-break exit)
+    public bool UseBarBreakExit { get; init; }
 }

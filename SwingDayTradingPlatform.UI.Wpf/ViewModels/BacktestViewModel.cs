@@ -8,6 +8,11 @@ using SwingDayTradingPlatform.UI.Wpf.Infrastructure;
 
 namespace SwingDayTradingPlatform.UI.Wpf.ViewModels;
 
+public sealed record StrategyOverviewRow(
+    string Name, decimal NetPnL, decimal WinRate, decimal ProfitFactor,
+    int TotalTrades, int Wins, int Losses, decimal Sharpe, decimal Sortino,
+    decimal MaxDrawdown, decimal AvgWinPts, decimal AvgLossPts, decimal AvgR);
+
 public sealed class BacktestViewModel : ObservableObject
 {
     private readonly AppConfig _appConfig;
@@ -44,11 +49,11 @@ public sealed class BacktestViewModel : ObservableObject
     private decimal _slippagePoints = 0m;
     private decimal _maxDailyLossPoints = 20m;
 
-    // MultiStrategy config fields
+    // MultiStrategy config fields (4 strategies only)
     private bool _enableStrategy1 = true;
-    private bool _enableStrategy2 = true;
-    private bool _enableStrategy3 = true;
-    private bool _enableStrategy4 = true;
+    private bool _enableStrategy5 = true;
+    private bool _enableStrategy7 = true;
+    private bool _enableStrategy9 = true;
     private bool _enableHourlyBias = true;
     private int _hourlyRangeLookback = 10;
     private int _rangeTopPct = 75;
@@ -56,8 +61,6 @@ public sealed class BacktestViewModel : ObservableObject
     private int _swingLookback = 3;
     private decimal _srClusterAtrFactor = 0.5m;
     private decimal _bigMoveAtrFactor = 3.0m;
-    private int _momentumBars = 3;
-    private decimal _momentumBodyAtrRatio = 0.7m;
     private decimal _tickSize = 0.25m;
 
     // Walk-forward
@@ -90,17 +93,28 @@ public sealed class BacktestViewModel : ObservableObject
     private Dictionary<string, BacktestResult> _strategyResults = new();
     private Dictionary<string, List<DailySummary>> _strategySummaries = new();
 
-    // Calendar
+    // Calendar (4 strategies: S1, S5, S7, S9)
     private IReadOnlyList<DailySummary>? _calendarSummaries1;
-    private IReadOnlyList<DailySummary>? _calendarSummaries2;
-    private IReadOnlyList<DailySummary>? _calendarSummaries3;
-    private IReadOnlyList<DailySummary>? _calendarSummaries4;
+    private IReadOnlyList<DailySummary>? _calendarSummaries5;
+    private IReadOnlyList<DailySummary>? _calendarSummaries7;
+    private IReadOnlyList<DailySummary>? _calendarSummaries9;
 
     // Strategy stat strings
     private string _stats1 = "--";
-    private string _stats2 = "--";
-    private string _stats3 = "--";
-    private string _stats4 = "--";
+    private string _stats5 = "--";
+    private string _stats7 = "--";
+    private string _stats9 = "--";
+
+    // Per-strategy detail stats
+    private string _statsNetPnL1 = "--", _statsNetPnL5 = "--", _statsNetPnL7 = "--", _statsNetPnL9 = "--";
+    private string _statsWinRate1 = "--", _statsWinRate5 = "--", _statsWinRate7 = "--", _statsWinRate9 = "--";
+    private string _statsSharpe1 = "--", _statsSharpe5 = "--", _statsSharpe7 = "--", _statsSharpe9 = "--";
+    private string _statsMaxDD1 = "--", _statsMaxDD5 = "--", _statsMaxDD7 = "--", _statsMaxDD9 = "--";
+    private string _statsPF1 = "--", _statsPF5 = "--", _statsPF7 = "--", _statsPF9 = "--";
+    private string _statsTrades1 = "--", _statsTrades5 = "--", _statsTrades7 = "--", _statsTrades9 = "--";
+
+    // Per-strategy equity curves
+    private IReadOnlyList<EquityPoint>? _equityCurve1, _equityCurve5, _equityCurve7, _equityCurve9;
 
     public BacktestViewModel(AppConfig appConfig)
     {
@@ -108,6 +122,7 @@ public sealed class BacktestViewModel : ObservableObject
         Trades = [];
         SweepResults = [];
         MonthlyReturns = [];
+        StrategyOverview = [];
         DayDetail = new DayDetailViewModel();
 
         DownloadCommand = new RelayCommand(_ => DownloadDataAsync(), _ => !IsDownloading && !IsRunning);
@@ -122,9 +137,9 @@ public sealed class BacktestViewModel : ObservableObject
         SlowEma = appConfig.MultiStrategy.SlowEmaPeriod;
         AtrPeriod = appConfig.MultiStrategy.AtrPeriod;
         EnableStrategy1 = appConfig.MultiStrategy.EnableStrategy1;
-        EnableStrategy2 = appConfig.MultiStrategy.EnableStrategy2;
-        EnableStrategy3 = appConfig.MultiStrategy.EnableStrategy3;
-        EnableStrategy4 = appConfig.MultiStrategy.EnableStrategy4;
+        EnableStrategy5 = appConfig.MultiStrategy.EnableStrategy5;
+        EnableStrategy7 = appConfig.MultiStrategy.EnableStrategy7;
+        EnableStrategy9 = appConfig.MultiStrategy.EnableStrategy9;
         EnableHourlyBias = appConfig.MultiStrategy.EnableHourlyBias;
         HourlyRangeLookback = appConfig.MultiStrategy.HourlyRangeLookback;
         RangeTopPct = appConfig.MultiStrategy.RangeTopPct;
@@ -132,8 +147,6 @@ public sealed class BacktestViewModel : ObservableObject
         SwingLookback = appConfig.MultiStrategy.SwingLookback;
         SRClusterAtrFactor = appConfig.MultiStrategy.SRClusterAtrFactor;
         BigMoveAtrFactor = appConfig.MultiStrategy.BigMoveAtrFactor;
-        MomentumBars = appConfig.MultiStrategy.MomentumBars;
-        MomentumBodyAtrRatio = appConfig.MultiStrategy.MomentumBodyAtrRatio;
         TickSize = appConfig.MultiStrategy.TickSize;
 
         // Try to load DB status
@@ -155,6 +168,7 @@ public sealed class BacktestViewModel : ObservableObject
     public ObservableCollection<BacktestTrade> Trades { get; }
     public ObservableCollection<BacktestResult> SweepResults { get; }
     public ObservableCollection<MonthlyReturn> MonthlyReturns { get; }
+    public ObservableCollection<StrategyOverviewRow> StrategyOverview { get; }
 
     // Download properties
     public DateTime DownloadStartDate { get => _downloadStartDate; set => SetProperty(ref _downloadStartDate, value); }
@@ -192,9 +206,9 @@ public sealed class BacktestViewModel : ObservableObject
 
     // Multi-strategy config
     public bool EnableStrategy1 { get => _enableStrategy1; set => SetProperty(ref _enableStrategy1, value); }
-    public bool EnableStrategy2 { get => _enableStrategy2; set => SetProperty(ref _enableStrategy2, value); }
-    public bool EnableStrategy3 { get => _enableStrategy3; set => SetProperty(ref _enableStrategy3, value); }
-    public bool EnableStrategy4 { get => _enableStrategy4; set => SetProperty(ref _enableStrategy4, value); }
+    public bool EnableStrategy5 { get => _enableStrategy5; set => SetProperty(ref _enableStrategy5, value); }
+    public bool EnableStrategy7 { get => _enableStrategy7; set => SetProperty(ref _enableStrategy7, value); }
+    public bool EnableStrategy9 { get => _enableStrategy9; set => SetProperty(ref _enableStrategy9, value); }
     public bool EnableHourlyBias { get => _enableHourlyBias; set => SetProperty(ref _enableHourlyBias, value); }
     public int HourlyRangeLookback { get => _hourlyRangeLookback; set => SetProperty(ref _hourlyRangeLookback, value); }
     public int RangeTopPct { get => _rangeTopPct; set => SetProperty(ref _rangeTopPct, value); }
@@ -202,8 +216,6 @@ public sealed class BacktestViewModel : ObservableObject
     public int SwingLookback { get => _swingLookback; set => SetProperty(ref _swingLookback, value); }
     public decimal SRClusterAtrFactor { get => _srClusterAtrFactor; set => SetProperty(ref _srClusterAtrFactor, value); }
     public decimal BigMoveAtrFactor { get => _bigMoveAtrFactor; set => SetProperty(ref _bigMoveAtrFactor, value); }
-    public int MomentumBars { get => _momentumBars; set => SetProperty(ref _momentumBars, value); }
-    public decimal MomentumBodyAtrRatio { get => _momentumBodyAtrRatio; set => SetProperty(ref _momentumBodyAtrRatio, value); }
     public decimal TickSize { get => _tickSize; set => SetProperty(ref _tickSize, value); }
 
     // Walk-forward
@@ -236,15 +248,52 @@ public sealed class BacktestViewModel : ObservableObject
 
     // Calendar summaries per strategy tab
     public IReadOnlyList<DailySummary>? CalendarSummaries1 { get => _calendarSummaries1; set => SetProperty(ref _calendarSummaries1, value); }
-    public IReadOnlyList<DailySummary>? CalendarSummaries2 { get => _calendarSummaries2; set => SetProperty(ref _calendarSummaries2, value); }
-    public IReadOnlyList<DailySummary>? CalendarSummaries3 { get => _calendarSummaries3; set => SetProperty(ref _calendarSummaries3, value); }
-    public IReadOnlyList<DailySummary>? CalendarSummaries4 { get => _calendarSummaries4; set => SetProperty(ref _calendarSummaries4, value); }
+    public IReadOnlyList<DailySummary>? CalendarSummaries5 { get => _calendarSummaries5; set => SetProperty(ref _calendarSummaries5, value); }
+    public IReadOnlyList<DailySummary>? CalendarSummaries7 { get => _calendarSummaries7; set => SetProperty(ref _calendarSummaries7, value); }
+    public IReadOnlyList<DailySummary>? CalendarSummaries9 { get => _calendarSummaries9; set => SetProperty(ref _calendarSummaries9, value); }
 
     // Strategy stats
     public string Stats1 { get => _stats1; set => SetProperty(ref _stats1, value); }
-    public string Stats2 { get => _stats2; set => SetProperty(ref _stats2, value); }
-    public string Stats3 { get => _stats3; set => SetProperty(ref _stats3, value); }
-    public string Stats4 { get => _stats4; set => SetProperty(ref _stats4, value); }
+    public string Stats5 { get => _stats5; set => SetProperty(ref _stats5, value); }
+    public string Stats7 { get => _stats7; set => SetProperty(ref _stats7, value); }
+    public string Stats9 { get => _stats9; set => SetProperty(ref _stats9, value); }
+
+    // Per-strategy detail stat properties
+    public string StatsNetPnL1 { get => _statsNetPnL1; set => SetProperty(ref _statsNetPnL1, value); }
+    public string StatsNetPnL5 { get => _statsNetPnL5; set => SetProperty(ref _statsNetPnL5, value); }
+    public string StatsNetPnL7 { get => _statsNetPnL7; set => SetProperty(ref _statsNetPnL7, value); }
+    public string StatsNetPnL9 { get => _statsNetPnL9; set => SetProperty(ref _statsNetPnL9, value); }
+
+    public string StatsWinRate1 { get => _statsWinRate1; set => SetProperty(ref _statsWinRate1, value); }
+    public string StatsWinRate5 { get => _statsWinRate5; set => SetProperty(ref _statsWinRate5, value); }
+    public string StatsWinRate7 { get => _statsWinRate7; set => SetProperty(ref _statsWinRate7, value); }
+    public string StatsWinRate9 { get => _statsWinRate9; set => SetProperty(ref _statsWinRate9, value); }
+
+    public string StatsSharpe1 { get => _statsSharpe1; set => SetProperty(ref _statsSharpe1, value); }
+    public string StatsSharpe5 { get => _statsSharpe5; set => SetProperty(ref _statsSharpe5, value); }
+    public string StatsSharpe7 { get => _statsSharpe7; set => SetProperty(ref _statsSharpe7, value); }
+    public string StatsSharpe9 { get => _statsSharpe9; set => SetProperty(ref _statsSharpe9, value); }
+
+    public string StatsMaxDD1 { get => _statsMaxDD1; set => SetProperty(ref _statsMaxDD1, value); }
+    public string StatsMaxDD5 { get => _statsMaxDD5; set => SetProperty(ref _statsMaxDD5, value); }
+    public string StatsMaxDD7 { get => _statsMaxDD7; set => SetProperty(ref _statsMaxDD7, value); }
+    public string StatsMaxDD9 { get => _statsMaxDD9; set => SetProperty(ref _statsMaxDD9, value); }
+
+    public string StatsPF1 { get => _statsPF1; set => SetProperty(ref _statsPF1, value); }
+    public string StatsPF5 { get => _statsPF5; set => SetProperty(ref _statsPF5, value); }
+    public string StatsPF7 { get => _statsPF7; set => SetProperty(ref _statsPF7, value); }
+    public string StatsPF9 { get => _statsPF9; set => SetProperty(ref _statsPF9, value); }
+
+    public string StatsTrades1 { get => _statsTrades1; set => SetProperty(ref _statsTrades1, value); }
+    public string StatsTrades5 { get => _statsTrades5; set => SetProperty(ref _statsTrades5, value); }
+    public string StatsTrades7 { get => _statsTrades7; set => SetProperty(ref _statsTrades7, value); }
+    public string StatsTrades9 { get => _statsTrades9; set => SetProperty(ref _statsTrades9, value); }
+
+    // Per-strategy equity curves
+    public IReadOnlyList<EquityPoint>? EquityCurve1 { get => _equityCurve1; set => SetProperty(ref _equityCurve1, value); }
+    public IReadOnlyList<EquityPoint>? EquityCurve5 { get => _equityCurve5; set => SetProperty(ref _equityCurve5, value); }
+    public IReadOnlyList<EquityPoint>? EquityCurve7 { get => _equityCurve7; set => SetProperty(ref _equityCurve7, value); }
+    public IReadOnlyList<EquityPoint>? EquityCurve9 { get => _equityCurve9; set => SetProperty(ref _equityCurve9, value); }
 
     public void OnCalendarDateSelected(string strategyName, DateOnly? date)
     {
@@ -413,17 +462,20 @@ public sealed class BacktestViewModel : ObservableObject
             await LoadBarsAsync();
             if (_loadedBars.Count == 0) return;
 
-            RunStatus = $"Loaded {_loadedBars.Count} bars. Running backtest...";
-            RunProgress = 25;
+            RunStatus = $"Loaded {_loadedBars.Count:N0} bars. Running backtest...";
+            RunProgress = 5;
 
             var parameters = BuildParameters();
             var config = BuildConfig();
+            var token = _cts!.Token;
 
             var result = await Task.Run(() =>
             {
                 var engine = new BacktestEngine();
-                return engine.Run(_loadedBars, parameters, config, _cts!.Token);
-            }, _cts.Token);
+                return engine.Run(_loadedBars, parameters, config, token,
+                    pct => Application.Current?.Dispatcher.BeginInvoke(() =>
+                        RunProgress = 5 + pct * 0.90));
+            }, token);
 
             RunProgress = 100;
             RunStatus = $"Backtest complete. {result.TotalTrades} trades, Net P&L: ${result.NetPnL:N2}";
@@ -443,8 +495,8 @@ public sealed class BacktestViewModel : ObservableObject
             await LoadBarsAsync();
             if (_loadedBars.Count == 0) return;
 
-            RunStatus = $"Loaded {_loadedBars.Count} bars. Running all strategies...";
-            RunProgress = 10;
+            RunStatus = $"Loaded {_loadedBars.Count:N0} bars. Running all strategies...";
+            RunProgress = 5;
 
             var parameters = BuildParameters();
             var config = BuildConfig();
@@ -457,7 +509,11 @@ public sealed class BacktestViewModel : ObservableObject
             // Run ALL heavy computation on background thread to keep UI responsive
             var computed = await Task.Run(() =>
             {
-                var results = MultiStrategyBacktester.RunAllStrategies(_loadedBars, parameters, config, token);
+                var results = MultiStrategyBacktester.RunAllStrategies(_loadedBars, parameters, config, token,
+                    pct => Application.Current?.Dispatcher.BeginInvoke(() =>
+                        RunProgress = 5 + pct * 0.90),
+                    status => Application.Current?.Dispatcher.BeginInvoke(() =>
+                        RunStatus = status));
 
                 var allTrades = results.Values.SelectMany(r => r.Trades).OrderBy(t => t.EntryTime).ToList();
 
@@ -536,13 +592,25 @@ public sealed class BacktestViewModel : ObservableObject
 
             // Per-strategy
             if (_strategyResults.TryGetValue("EmaPullback", out var r1))
-            { CalendarSummaries1 = computed.stratSummaries.GetValueOrDefault("EmaPullback"); Stats1 = FormatStats(r1); }
-            if (_strategyResults.TryGetValue("SRReversal", out var r2))
-            { CalendarSummaries2 = computed.stratSummaries.GetValueOrDefault("SRReversal"); Stats2 = FormatStats(r2); }
-            if (_strategyResults.TryGetValue("FiftyPctPullback", out var r3))
-            { CalendarSummaries3 = computed.stratSummaries.GetValueOrDefault("FiftyPctPullback"); Stats3 = FormatStats(r3); }
-            if (_strategyResults.TryGetValue("Momentum", out var r4))
-            { CalendarSummaries4 = computed.stratSummaries.GetValueOrDefault("Momentum"); Stats4 = FormatStats(r4); }
+            { CalendarSummaries1 = computed.stratSummaries.GetValueOrDefault("EmaPullback"); Stats1 = FormatStats(r1); ApplyStrategyDetail(r1, 1); }
+            if (_strategyResults.TryGetValue("EmaPullbackBarBreak", out var r5))
+            { CalendarSummaries5 = computed.stratSummaries.GetValueOrDefault("EmaPullbackBarBreak"); Stats5 = FormatStats(r5); ApplyStrategyDetail(r5, 5); }
+            if (_strategyResults.TryGetValue("SecondLeg", out var r7))
+            { CalendarSummaries7 = computed.stratSummaries.GetValueOrDefault("SecondLeg"); Stats7 = FormatStats(r7); ApplyStrategyDetail(r7, 7); }
+            if (_strategyResults.TryGetValue("BrooksPA", out var r9))
+            { CalendarSummaries9 = computed.stratSummaries.GetValueOrDefault("BrooksPA"); Stats9 = FormatStats(r9); ApplyStrategyDetail(r9, 9); }
+
+            // Populate strategy overview
+            StrategyOverview.Clear();
+            foreach (var kvp in computed.results)
+            {
+                var r = kvp.Value;
+                StrategyOverview.Add(new StrategyOverviewRow(
+                    kvp.Key, r.NetPnL, r.WinRate, r.ProfitFactor,
+                    r.TotalTrades, r.WinningTrades, r.LosingTrades,
+                    r.SharpeRatio, r.SortinoRatio, r.MaxDrawdown,
+                    r.AvgWinPoints, r.AvgLossPoints, r.AvgRPerTrade));
+            }
 
             RunProgress = 100;
             RunStatus = $"All strategies complete. {computed.combinedTradeCount} total trades.";
@@ -555,9 +623,28 @@ public sealed class BacktestViewModel : ObservableObject
     private static string FormatStats(BacktestResult r) =>
         $"Net: ${r.NetPnL:N2}  |  Win: {r.WinRate:F1}%  |  PF: {r.ProfitFactor:F2}  |  Trades: {r.TotalTrades}  |  Sharpe: {r.SharpeRatio:F2}  |  MaxDD: ${r.MaxDrawdown:N2}";
 
+    private void ApplyStrategyDetail(BacktestResult r, int idx)
+    {
+        var pnl = $"${r.NetPnL:N2}";
+        var wr = $"{r.WinRate:F1}%";
+        var sh = $"{r.SharpeRatio:F2}";
+        var dd = $"${r.MaxDrawdown:N2}";
+        var pf = $"{r.ProfitFactor:F2}";
+        var tr = r.TotalTrades.ToString();
+        IReadOnlyList<EquityPoint> eq = r.EquityCurve;
+
+        switch (idx)
+        {
+            case 1: StatsNetPnL1 = pnl; StatsWinRate1 = wr; StatsSharpe1 = sh; StatsMaxDD1 = dd; StatsPF1 = pf; StatsTrades1 = tr; EquityCurve1 = eq; break;
+            case 5: StatsNetPnL5 = pnl; StatsWinRate5 = wr; StatsSharpe5 = sh; StatsMaxDD5 = dd; StatsPF5 = pf; StatsTrades5 = tr; EquityCurve5 = eq; break;
+            case 7: StatsNetPnL7 = pnl; StatsWinRate7 = wr; StatsSharpe7 = sh; StatsMaxDD7 = dd; StatsPF7 = pf; StatsTrades7 = tr; EquityCurve7 = eq; break;
+            case 9: StatsNetPnL9 = pnl; StatsWinRate9 = wr; StatsSharpe9 = sh; StatsMaxDD9 = dd; StatsPF9 = pf; StatsTrades9 = tr; EquityCurve9 = eq; break;
+        }
+    }
+
     private async Task LoadBarsAsync()
     {
-        RunStatus = "Loading data...";
+        RunStatus = "Loading data from database...";
         RunProgress = 0;
 
         var dbPath = GetDbPath();
@@ -573,6 +660,9 @@ public sealed class BacktestViewModel : ObservableObject
             {
                 return await SqliteBarStore.LoadRangeAsync(dbPath, startDate, endDate, token);
             }
+
+            Application.Current?.Dispatcher.BeginInvoke(() =>
+                RunStatus = "Loading data from CSV...");
 
             // Fallback to CSV
             var csvPath = Path.Combine(AppContext.BaseDirectory, _appConfig.Storage.BasePath, "historical", "ES_5min_RTH.csv");
@@ -621,9 +711,9 @@ public sealed class BacktestViewModel : ObservableObject
         MaxLossesPerDay = MaxLossesPerDay,
         MaxStopPoints = MaxStopPoints,
         EnableStrategy1 = EnableStrategy1,
-        EnableStrategy2 = EnableStrategy2,
-        EnableStrategy3 = EnableStrategy3,
-        EnableStrategy4 = EnableStrategy4,
+        EnableStrategy5 = EnableStrategy5,
+        EnableStrategy7 = EnableStrategy7,
+        EnableStrategy9 = EnableStrategy9,
         EnableHourlyBias = EnableHourlyBias,
         HourlyRangeLookback = HourlyRangeLookback,
         RangeTopPct = RangeTopPct,
@@ -631,19 +721,37 @@ public sealed class BacktestViewModel : ObservableObject
         SwingLookback = SwingLookback,
         SRClusterAtrFactor = SRClusterAtrFactor,
         BigMoveAtrFactor = BigMoveAtrFactor,
-        MomentumBars = MomentumBars,
-        MomentumBodyAtrRatio = MomentumBodyAtrRatio,
         TickSize = TickSize,
         TrailingStopAtrMultiplier = _appConfig.MultiStrategy.TrailingStopAtrMultiplier,
         TrailingStopActivationBars = _appConfig.MultiStrategy.TrailingStopActivationBars,
         UseBarBreakExit = _appConfig.MultiStrategy.UseBarBreakExit,
+        UseReversalBarExit = _appConfig.MultiStrategy.UseReversalBarExit,
+        RsiPeriod = _appConfig.MultiStrategy.RsiPeriod,
         EmaPullbackRewardRatio = _appConfig.MultiStrategy.EmaPullbackRewardRatio,
         EmaPullbackTolerance = _appConfig.MultiStrategy.EmaPullbackTolerance,
-        SRMinTouches = _appConfig.MultiStrategy.SRMinTouches,
-        SRReversalRewardRatio = _appConfig.MultiStrategy.SRReversalRewardRatio,
-        MomentumRewardRatio = _appConfig.MultiStrategy.MomentumRewardRatio,
-        MomentumPullbackWindowBars = _appConfig.MultiStrategy.MomentumPullbackWindowBars,
-        BigMoveStaleBars = _appConfig.MultiStrategy.BigMoveStaleBars
+        EmaMinSlopeAtr = _appConfig.MultiStrategy.EmaMinSlopeAtr,
+        EmaBodyMinAtrRatio = _appConfig.MultiStrategy.EmaBodyMinAtrRatio,
+        EmaRsiLongMin = _appConfig.MultiStrategy.EmaRsiLongMin,
+        EmaRsiLongMax = _appConfig.MultiStrategy.EmaRsiLongMax,
+        EmaRsiShortMin = _appConfig.MultiStrategy.EmaRsiShortMin,
+        EmaRsiShortMax = _appConfig.MultiStrategy.EmaRsiShortMax,
+        EmaStopAtrBuffer = _appConfig.MultiStrategy.EmaStopAtrBuffer,
+        BrooksPA_SignalBarBodyRatio = _appConfig.MultiStrategy.BrooksPA_SignalBarBodyRatio,
+        BrooksPA_MinBarRangeAtr = _appConfig.MultiStrategy.BrooksPA_MinBarRangeAtr,
+        BrooksPA_PullbackLookback = _appConfig.MultiStrategy.BrooksPA_PullbackLookback,
+        BrooksPA_EmaToleranceAtr = _appConfig.MultiStrategy.BrooksPA_EmaToleranceAtr,
+        BrooksPA_RewardRatio = _appConfig.MultiStrategy.BrooksPA_RewardRatio,
+        BrooksPA_MaxStopTicks = _appConfig.MultiStrategy.BrooksPA_MaxStopTicks,
+        EnableTimeFilter = _appConfig.MultiStrategy.EnableTimeFilter,
+        LunchStartHour = _appConfig.MultiStrategy.LunchStartHour,
+        LunchStartMinute = _appConfig.MultiStrategy.LunchStartMinute,
+        LunchEndHour = _appConfig.MultiStrategy.LunchEndHour,
+        LunchEndMinute = _appConfig.MultiStrategy.LunchEndMinute,
+        LateCutoffHour = _appConfig.MultiStrategy.LateCutoffHour,
+        LateCutoffMinute = _appConfig.MultiStrategy.LateCutoffMinute,
+        MaxDailyTrades = _appConfig.MultiStrategy.MaxDailyTrades,
+        EnableBreakEvenStop = _appConfig.MultiStrategy.EnableBreakEvenStop,
+        BreakEvenActivationR = _appConfig.MultiStrategy.BreakEvenActivationR
     };
 
     private BacktestConfig BuildConfig() => new()

@@ -242,4 +242,139 @@ public class RiskEngineTests
         engine.MarkEntryAttempt(DateTimeOffset.UtcNow.AddMinutes(61), "test2");
         Assert.Equal(2, engine.TradeCountToday);
     }
+
+    [Fact]
+    public void ConsecutiveLosses_ArmsKillSwitch()
+    {
+        var config = new RiskConfig
+        {
+            MaxDailyLoss = 999_999m,
+            MaxTradesPerDay = 99,
+            MaxLossesPerDay = 99,
+            MaxStopPoints = 50m,
+            CooldownSeconds = 0,
+            FixedContracts = 1,
+            MaxContracts = 1,
+            MaxConsecutiveLossesPerDay = 3
+        };
+        var engine = CreateEngine(config);
+        engine.RegisterClosedTrade(-100m, -1m);
+        Assert.False(engine.KillSwitchArmed);
+        engine.RegisterClosedTrade(-100m, -1m);
+        Assert.False(engine.KillSwitchArmed);
+        engine.RegisterClosedTrade(-100m, -1m);
+        Assert.True(engine.KillSwitchArmed);
+    }
+
+    [Fact]
+    public void ConsecutiveLosses_WinResetsStreak()
+    {
+        var config = new RiskConfig
+        {
+            MaxDailyLoss = 999_999m,
+            MaxTradesPerDay = 99,
+            MaxLossesPerDay = 99,
+            MaxStopPoints = 50m,
+            CooldownSeconds = 0,
+            FixedContracts = 1,
+            MaxContracts = 1,
+            MaxConsecutiveLossesPerDay = 3
+        };
+        var engine = CreateEngine(config);
+        engine.RegisterClosedTrade(-100m, -1m);
+        engine.RegisterClosedTrade(-100m, -1m);
+        engine.RegisterClosedTrade(200m, 2m); // win resets streak
+        Assert.Equal(0, engine.ConsecutiveLosses);
+        Assert.False(engine.KillSwitchArmed);
+        engine.RegisterClosedTrade(-100m, -1m);
+        engine.RegisterClosedTrade(-100m, -1m);
+        Assert.False(engine.KillSwitchArmed); // only 2 consecutive
+    }
+
+    [Fact]
+    public void DailyRLossLimit_ArmsKillSwitch()
+    {
+        var config = new RiskConfig
+        {
+            MaxDailyLoss = 999_999m,
+            MaxTradesPerDay = 99,
+            MaxLossesPerDay = 99,
+            MaxStopPoints = 50m,
+            CooldownSeconds = 0,
+            FixedContracts = 1,
+            MaxContracts = 1,
+            MaxDailyLossR = 2.0m
+        };
+        var engine = CreateEngine(config);
+        engine.RegisterClosedTrade(-100m, -1.5m);
+        Assert.False(engine.KillSwitchArmed);
+        engine.RegisterClosedTrade(-100m, -1.0m); // cumR = -2.5 > -2.0 limit
+        Assert.True(engine.KillSwitchArmed);
+    }
+
+    [Fact]
+    public void MaxStopTicks_RejectsLargeStop()
+    {
+        var config = new RiskConfig
+        {
+            MaxDailyLoss = 999_999m,
+            MaxTradesPerDay = 99,
+            MaxLossesPerDay = 99,
+            MaxStopPoints = 50m,
+            CooldownSeconds = 0,
+            FixedContracts = 1,
+            MaxContracts = 1,
+            MaxStopTicks = 30
+        };
+        var engine = CreateEngine(config);
+        // 10 point stop / 0.25 tick = 40 ticks > 30 max
+        var contracts = engine.CalculateContracts(5000m, 4990m, 25000m, 50m, 0.25m);
+        Assert.Equal(0, contracts);
+        Assert.Contains("Stop ticks", engine.LastReason);
+    }
+
+    [Fact]
+    public void MaxStopTicks_Zero_DisablesCheck()
+    {
+        var config = new RiskConfig
+        {
+            MaxDailyLoss = 999_999m,
+            MaxTradesPerDay = 99,
+            MaxLossesPerDay = 99,
+            MaxStopPoints = 50m,
+            CooldownSeconds = 0,
+            FixedContracts = 1,
+            MaxContracts = 1,
+            MaxStopTicks = 0 // disabled
+        };
+        var engine = CreateEngine(config);
+        var contracts = engine.CalculateContracts(5000m, 4990m, 25000m, 50m, 0.25m);
+        Assert.Equal(1, contracts); // should pass
+    }
+
+    [Fact]
+    public void ResetForNewDay_ClearsRState()
+    {
+        var config = new RiskConfig
+        {
+            MaxDailyLoss = 999_999m,
+            MaxTradesPerDay = 99,
+            MaxLossesPerDay = 99,
+            MaxStopPoints = 50m,
+            CooldownSeconds = 0,
+            FixedContracts = 1,
+            MaxContracts = 1,
+            MaxConsecutiveLossesPerDay = 99,
+            MaxDailyLossR = 99m
+        };
+        var engine = CreateEngine(config);
+        engine.RegisterClosedTrade(-100m, -1m);
+        engine.RegisterClosedTrade(-100m, -1m);
+        Assert.Equal(2, engine.ConsecutiveLosses);
+        Assert.Equal(-2m, engine.DailyCumulativeR);
+
+        engine.ResetForNewDay();
+        Assert.Equal(0, engine.ConsecutiveLosses);
+        Assert.Equal(0m, engine.DailyCumulativeR);
+    }
 }

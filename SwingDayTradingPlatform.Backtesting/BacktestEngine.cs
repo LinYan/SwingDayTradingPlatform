@@ -17,7 +17,8 @@ public sealed class BacktestEngine
         List<MarketBar> bars,
         BacktestParameters parameters,
         BacktestConfig config,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Action<double>? onProgress = null)
     {
         var multiConfig = BuildMultiConfig(parameters);
         var riskConfig = parameters.ToRiskConfig();
@@ -59,9 +60,21 @@ public sealed class BacktestEngine
 
         equityCurve.Add(new EquityPoint(bars.Count > 0 ? bars[0].OpenTimeUtc : DateTimeOffset.MinValue, equity, 0m));
 
+        var lastProgressTick = Environment.TickCount64;
         for (var i = 0; i < bars.Count; i++)
         {
             ct.ThrowIfCancellationRequested();
+
+            // Throttle progress updates to max once per 200ms
+            if (onProgress is not null)
+            {
+                var now = Environment.TickCount64;
+                if (now - lastProgressTick >= 200)
+                {
+                    onProgress((double)i / bars.Count * 100);
+                    lastProgressTick = now;
+                }
+            }
 
             var bar = bars[i];
             exitedThisBar = false;
@@ -83,7 +96,7 @@ public sealed class BacktestEngine
                     var dayEndExit = ApplyExitSlippage(bar.Open, position.Direction, config.SlippagePoints);
                     var flatPnL = CloseTrade(position, dayEndExit, "DayEnd", config, trades, ref tradeNumber, bar.OpenTimeUtc);
                     equity += flatPnL;
-                    riskEngine.RegisterClosedTrade(flatPnL);
+                    riskEngine.RegisterClosedTrade(flatPnL, trades[^1].RMultiple);
                     position = null;
                 }
             }
@@ -116,7 +129,7 @@ public sealed class BacktestEngine
                     equity += pnl;
                     var pnlPts = trades[^1].PnLPoints;
                     dailyPnLPoints += pnlPts;
-                    riskEngine.RegisterClosedTrade(pnl);
+                    riskEngine.RegisterClosedTrade(pnl, trades[^1].RMultiple);
                     position = null;
                     exitedThisBar = true;
                 }
@@ -130,7 +143,7 @@ public sealed class BacktestEngine
                 equity += pnl;
                 var pnlPts = trades[^1].PnLPoints;
                 dailyPnLPoints += pnlPts;
-                riskEngine.RegisterClosedTrade(pnl);
+                riskEngine.RegisterClosedTrade(pnl, trades[^1].RMultiple);
                 position = null;
                 exitedThisBar = true;
                 dayTradingComplete = true;
@@ -150,7 +163,7 @@ public sealed class BacktestEngine
                     equity += lossPnl;
                     var lossPts = trades[^1].PnLPoints;
                     dailyPnLPoints += lossPts;
-                    riskEngine.RegisterClosedTrade(lossPnl);
+                    riskEngine.RegisterClosedTrade(lossPnl, trades[^1].RMultiple);
                     position = null;
                     exitedThisBar = true;
                 }
@@ -184,7 +197,7 @@ public sealed class BacktestEngine
                 equity += pnl;
                 var pnlPts = trades[^1].PnLPoints;
                 dailyPnLPoints += pnlPts;
-                riskEngine.RegisterClosedTrade(pnl);
+                riskEngine.RegisterClosedTrade(pnl, trades[^1].RMultiple);
                 position = null;
                 exitedThisBar = true;
             }
@@ -195,7 +208,7 @@ public sealed class BacktestEngine
                 if (!triggeredSignals.Contains(signal.SignalId))
                 {
                     var contracts = riskEngine.CalculateContracts(
-                        signal.EntryPrice, signal.StopPrice, equity, config.PointValue);
+                        signal.EntryPrice, signal.StopPrice, equity, config.PointValue, parameters.TickSize);
 
                     if (contracts > 0)
                     {
@@ -203,8 +216,8 @@ public sealed class BacktestEngine
                         triggeredSignals.Add(signal.SignalId);
 
                         var entryFill = signal.Direction == PositionSide.Long
-                            ? bar.Close + config.SlippagePoints
-                            : bar.Close - config.SlippagePoints;
+                            ? signal.EntryPrice + config.SlippagePoints
+                            : signal.EntryPrice - config.SlippagePoints;
 
                         position = new PendingPosition(
                             signal.Direction,
@@ -250,9 +263,9 @@ public sealed class BacktestEngine
                 SlowEmaPeriod = config.SlowEmaPeriod,
                 AtrPeriod = config.AtrPeriod,
                 EnableStrategy1 = _strategyFilter == "EmaPullback",
-                EnableStrategy2 = _strategyFilter == "SRReversal",
-                EnableStrategy3 = _strategyFilter == "FiftyPctPullback",
-                EnableStrategy4 = _strategyFilter == "Momentum",
+                EnableStrategy5 = _strategyFilter == "EmaPullbackBarBreak",
+                EnableStrategy7 = _strategyFilter == "SecondLeg",
+                EnableStrategy9 = _strategyFilter == "BrooksPA",
                 EnableHourlyBias = config.EnableHourlyBias,
                 HourlyRangeLookback = config.HourlyRangeLookback,
                 RangeTopPct = config.RangeTopPct,
@@ -260,20 +273,47 @@ public sealed class BacktestEngine
                 SwingLookback = config.SwingLookback,
                 SRClusterAtrFactor = config.SRClusterAtrFactor,
                 BigMoveAtrFactor = config.BigMoveAtrFactor,
-                MomentumBars = config.MomentumBars,
-                MomentumBodyAtrRatio = config.MomentumBodyAtrRatio,
                 TickSize = config.TickSize,
                 TrailingStopAtrMultiplier = config.TrailingStopAtrMultiplier,
                 TrailingStopActivationBars = config.TrailingStopActivationBars,
                 UseBarBreakExit = config.UseBarBreakExit,
+                UseReversalBarExit = config.UseReversalBarExit,
+                RsiPeriod = config.RsiPeriod,
                 EmaPullbackRewardRatio = config.EmaPullbackRewardRatio,
                 EmaPullbackTolerance = config.EmaPullbackTolerance,
-                SRMinTouches = config.SRMinTouches,
-                SRReversalRewardRatio = config.SRReversalRewardRatio,
-                MomentumRewardRatio = config.MomentumRewardRatio,
-                MomentumPullbackWindowBars = config.MomentumPullbackWindowBars,
+                EmaMinSlopeAtr = config.EmaMinSlopeAtr,
+                EmaBodyMinAtrRatio = config.EmaBodyMinAtrRatio,
+                EmaRsiLongMin = config.EmaRsiLongMin,
+                EmaRsiLongMax = config.EmaRsiLongMax,
+                EmaRsiShortMin = config.EmaRsiShortMin,
+                EmaRsiShortMax = config.EmaRsiShortMax,
+                EmaStopAtrBuffer = config.EmaStopAtrBuffer,
+                SL_FirstLegMaxBars = config.SL_FirstLegMaxBars,
+                SL_MinFirstLegAtr = config.SL_MinFirstLegAtr,
+                SL_AnchorToleranceAtr = config.SL_AnchorToleranceAtr,
+                SL_MinPullbackRetrace = config.SL_MinPullbackRetrace,
+                SL_MaxPullbackRetrace = config.SL_MaxPullbackRetrace,
+                SL_EnableFakeBreakout = config.SL_EnableFakeBreakout,
+                SL_EntryBodyMinAtr = config.SL_EntryBodyMinAtr,
+                SL_StopAtrBuffer = config.SL_StopAtrBuffer,
+                SL_RewardRatio = config.SL_RewardRatio,
+                BrooksPA_SignalBarBodyRatio = config.BrooksPA_SignalBarBodyRatio,
+                BrooksPA_MinBarRangeAtr = config.BrooksPA_MinBarRangeAtr,
+                BrooksPA_PullbackLookback = config.BrooksPA_PullbackLookback,
+                BrooksPA_EmaToleranceAtr = config.BrooksPA_EmaToleranceAtr,
+                BrooksPA_RewardRatio = config.BrooksPA_RewardRatio,
+                BrooksPA_MaxStopTicks = config.BrooksPA_MaxStopTicks,
                 MaxStopPoints = config.MaxStopPoints,
-                BigMoveStaleBars = config.BigMoveStaleBars
+                EnableTimeFilter = config.EnableTimeFilter,
+                LunchStartHour = config.LunchStartHour,
+                LunchStartMinute = config.LunchStartMinute,
+                LunchEndHour = config.LunchEndHour,
+                LunchEndMinute = config.LunchEndMinute,
+                LateCutoffHour = config.LateCutoffHour,
+                LateCutoffMinute = config.LateCutoffMinute,
+                MaxDailyTrades = config.MaxDailyTrades,
+                EnableBreakEvenStop = config.EnableBreakEvenStop,
+                BreakEvenActivationR = config.BreakEvenActivationR
             };
         }
 
@@ -297,6 +337,9 @@ public sealed class BacktestEngine
         var pnlDollars = pnlPoints * config.PointValue * pos.Quantity;
         var commission = config.CommissionPerTrade * 2 * pos.Quantity;
 
+        var initialStopDistance = Math.Abs(pos.EntryPrice - pos.StopPrice);
+        var rMultiple = initialStopDistance > 0 ? pnlPoints / initialStopDistance : 0m;
+
         trades.Add(new BacktestTrade(
             tradeNumber,
             pos.EntryTime,
@@ -313,7 +356,9 @@ public sealed class BacktestEngine
             MAE = pos.MAE,
             MFE = pos.MFE,
             EntryReason = pos.SignalReason,
-            ExitReasonDetail = exitReason
+            ExitReasonDetail = exitReason,
+            RMultiple = rMultiple,
+            InitialStopDistance = initialStopDistance
         });
 
         return pnlDollars - commission;
@@ -328,21 +373,13 @@ public sealed class BacktestEngine
             if (bracketEnd > 1)
             {
                 var name = reason[1..bracketEnd];
-                if (name == "EmaPullback" || name == "SRReversal" ||
-                    name == "FiftyPctPullback" || name == "Momentum")
+                if (name == "EmaPullback" || name == "EmaPullbackBarBreak" ||
+                    name == "SecondLeg" || name == "BrooksPA")
                     return name;
             }
         }
 
-        // Fallback: check specific patterns (order matters - most specific first)
-        if (reason.Contains("50%", StringComparison.OrdinalIgnoreCase) ||
-            reason.Contains("FiftyPct", StringComparison.OrdinalIgnoreCase))
-            return "FiftyPctPullback";
-        if (reason.Contains("Momentum", StringComparison.OrdinalIgnoreCase))
-            return "Momentum";
-        if (reason.Contains("S/R", StringComparison.OrdinalIgnoreCase) ||
-            reason.Contains("Reversal", StringComparison.OrdinalIgnoreCase))
-            return "SRReversal";
+        // Fallback: check specific patterns
         if (reason.Contains("EMA", StringComparison.OrdinalIgnoreCase) ||
             reason.Contains("Higher low", StringComparison.OrdinalIgnoreCase) ||
             reason.Contains("Lower high", StringComparison.OrdinalIgnoreCase))
