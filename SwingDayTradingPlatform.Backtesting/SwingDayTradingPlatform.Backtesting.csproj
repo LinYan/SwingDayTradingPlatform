@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SwingDayTradingPlatform.Shared\SwingDayTradingPlatform.Shared.csproj" />
+    <ProjectReference Include="..\SwingDayTradingPlatform.Strategy\SwingDayTradingPlatform.Strategy.csproj" />
+    <ProjectReference Include="..\SwingDayTradingPlatform.Risk\SwingDayTradingPlatform.Risk.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <AssemblyName>SwingDayTradingPlatform.Backtesting</AssemblyName>
+    <RootNamespace>SwingDayTradingPlatform.Backtesting</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

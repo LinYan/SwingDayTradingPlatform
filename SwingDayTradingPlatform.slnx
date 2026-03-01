@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="SwingDayTradingPlatform.Backtesting/SwingDayTradingPlatform.Backtesting.csproj" />
+  <Project Path="SwingDayTradingPlatform.Execution.Ibkr/SwingDayTradingPlatform.Execution.Ibkr.csproj" />
+  <Project Path="SwingDayTradingPlatform.Risk/SwingDayTradingPlatform.Risk.csproj" />
+  <Project Path="SwingDayTradingPlatform.Shared/SwingDayTradingPlatform.Shared.csproj" />
+  <Project Path="SwingDayTradingPlatform.Storage/SwingDayTradingPlatform.Storage.csproj" />
+  <Project Path="SwingDayTradingPlatform.Strategy/SwingDayTradingPlatform.Strategy.csproj" />
+  <Project Path="SwingDayTradingPlatform.Tests/SwingDayTradingPlatform.Tests.csproj" />
+  <Project Path="SwingDayTradingPlatform.UI.Wpf/SwingDayTradingPlatform.UI.Wpf.csproj" />
+</Solution>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SwingDayTradingPlatform.Shared\SwingDayTradingPlatform.Shared.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <AssemblyName>SwingDayTradingPlatform.Risk</AssemblyName>
+    <RootNamespace>SwingDayTradingPlatform.Risk</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

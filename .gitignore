@@ -1,0 +1,67 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# VS build
+.vs/
+*.VisualState.xml
+TestResult.xml
+[Dd]ebugPublic/
+[Rr]eleases/
+
+# NuGet
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nupkg
+**/packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Build logs
+*.log
+msbuild.*.binlog
+
+# IDE
+.idea/
+*.sln.iml
+.vscode/
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Test results
+TestResults/
+
+# Data and state
+data/
+
+# TestDownload folders
+TestDownload/
+TestDownload2/
+
+# Tool / environment state
+.claude/
+.dotnet-home/
+
+# Secrets / credentials
+*.env
+appsettings.*.json
+!appsettings.json

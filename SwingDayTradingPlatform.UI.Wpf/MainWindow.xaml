@@ -1,0 +1,1129 @@
+<Window x:Class="SwingDayTradingPlatform.UI.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:SwingDayTradingPlatform.UI.Wpf.Controls"
+        Title="ES Swing/Day Trading Platform"
+        Width="1540"
+        Height="980"
+        MinWidth="1280"
+        MinHeight="800"
+        Background="#EFECEA"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- ==================== COLOR PALETTE ==================== -->
+        <Color x:Key="AccentBlue">#2B6CB0</Color>
+        <Color x:Key="AccentGreen">#0F9D7A</Color>
+        <Color x:Key="AccentAmber">#C48B2C</Color>
+        <Color x:Key="AccentRed">#C44B3B</Color>
+        <Color x:Key="HeaderDark">#1B3044</Color>
+        <Color x:Key="CardBg">#FFFFFF</Color>
+        <Color x:Key="CardBorder">#E2DFD8</Color>
+        <Color x:Key="TextPrimary">#1E293B</Color>
+        <Color x:Key="TextSecondary">#64748B</Color>
+        <Color x:Key="InputBorder">#CBD5E1</Color>
+        <Color x:Key="InputFocusBorder">#2B6CB0</Color>
+
+        <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource AccentBlue}"/>
+        <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreen}"/>
+        <SolidColorBrush x:Key="AccentAmberBrush" Color="{StaticResource AccentAmber}"/>
+        <SolidColorBrush x:Key="AccentRedBrush" Color="{StaticResource AccentRed}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+
+        <!-- ==================== BUTTON STYLE ==================== -->
+        <Style x:Key="PillButton" TargetType="Button">
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="18,0"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="8" Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.88"/>
+                                <Setter TargetName="Bd" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="12" ShadowDepth="0" Opacity="0.25" Color="Black"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.75"/>
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.97" ScaleY="0.97"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ==================== TEXTBOX STYLE ==================== -->
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FAFAF8"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Bd" CornerRadius="6" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderThickness" Value="1.5"/>
+                                <Setter TargetName="Bd" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="8" ShadowDepth="0" Opacity="0.15" Color="#2B6CB0"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ==================== CHECKBOX STYLE ==================== -->
+        <Style TargetType="CheckBox">
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="Box" Width="18" Height="18" CornerRadius="5" BorderThickness="1.5"
+                                    BorderBrush="#CBD5E1" Background="#FAFAF8" SnapsToDevicePixels="True"
+                                    VerticalAlignment="Center" Margin="0,0,7,0">
+                                <Path x:Name="Check" Data="M 3 9 L 7 13 L 15 3" Stroke="White" StrokeThickness="2"
+                                      Width="16" Height="16" Stretch="Uniform" Margin="2"
+                                      VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                            </Border>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{StaticResource AccentBlueBrush}"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+                                <Setter TargetName="Box" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="6" ShadowDepth="0" Opacity="0.2" Color="#2B6CB0"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBlueBrush}"/>
+                                <Setter TargetName="Box" Property="Background" Value="#F0F4FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ==================== PROGRESS BAR ==================== -->
+        <Style TargetType="ProgressBar">
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Background" Value="#E2E8F0"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentBlueBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border CornerRadius="5" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <Border x:Name="PART_Track">
+                                <Border x:Name="PART_Indicator" CornerRadius="5" HorizontalAlignment="Left">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                            <GradientStop Color="#2B6CB0" Offset="0"/>
+                                            <GradientStop Color="#38BDF8" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="8" ShadowDepth="0" Opacity="0.4" Color="#38BDF8"/>
+                                    </Border.Effect>
+                                </Border>
+                            </Border>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ==================== EXPANDER STYLE ==================== -->
+        <Style TargetType="Expander">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Expander">
+                        <StackPanel>
+                            <ToggleButton x:Name="HeaderSite" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                          Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalContentAlignment="Left">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="HdrBd" Background="Transparent" Padding="4,5" CornerRadius="6">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border x:Name="ArrowBg" Width="20" Height="20" CornerRadius="4" Background="#EEF2FF" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                    <TextBlock x:Name="Arrow" Text="&#x25B6;" FontSize="8" Foreground="#94A3B8"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                               RenderTransformOrigin="0.5,0.5" Margin="1,0,0,0">
+                                                        <TextBlock.RenderTransform>
+                                                            <RotateTransform Angle="0"/>
+                                                        </TextBlock.RenderTransform>
+                                                    </TextBlock>
+                                                </Border>
+                                                <ContentPresenter ContentSource="Content"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Arrow" Property="RenderTransform">
+                                                    <Setter.Value>
+                                                        <RotateTransform Angle="90"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter TargetName="Arrow" Property="Foreground" Value="{StaticResource AccentBlueBrush}"/>
+                                                <Setter TargetName="ArrowBg" Property="Background" Value="#DBEAFE"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Arrow" Property="Foreground" Value="{StaticResource AccentBlueBrush}"/>
+                                                <Setter TargetName="HdrBd" Property="Background" Value="#F8FAFC"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                                <TextBlock Text="{TemplateBinding Header}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ExpandSite" Visibility="Collapsed"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="True">
+                                <Setter TargetName="ExpandSite" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ==================== TAB CONTROL ==================== -->
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+        <Style TargetType="TabItem">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Grid>
+                            <Border x:Name="Bd" CornerRadius="8,8,0,0" Padding="{TemplateBinding Padding}"
+                                    Background="Transparent" Margin="0,0,2,0" Cursor="Hand" SnapsToDevicePixels="True">
+                                <ContentPresenter ContentSource="Header" HorizontalAlignment="Center"/>
+                            </Border>
+                            <Border x:Name="AccentBar" Height="3" VerticalAlignment="Bottom" Margin="4,0,6,0"
+                                    CornerRadius="1.5" Background="{StaticResource AccentBlueBrush}" Opacity="0"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="White"/>
+                                <Setter Property="Foreground" Value="#1B3044"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter TargetName="AccentBar" Property="Opacity" Value="1"/>
+                                <Setter TargetName="Bd" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="8" ShadowDepth="1" Opacity="0.08" Color="Black"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="False"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Bd" Property="Background" Value="#F1F5F9"/>
+                                <Setter TargetName="AccentBar" Property="Opacity" Value="0.3"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ==================== DATAGRID STYLE ==================== -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="AlternatingRowBackground" Value="#F8FAFC"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#F1F5F9"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="RowHeight" Value="32"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="CanUserResizeRows" Value="False"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F0F4FF"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#DBEAFE"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Foreground" Value="#334155"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Padding" Value="8,7"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridColumnHeader">
+                        <Border x:Name="Bd" Padding="{TemplateBinding Padding}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="True">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#EDF1F7" Offset="0"/>
+                                    <GradientStop Color="#E2E8F0" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <StackPanel Orientation="Horizontal">
+                                <ContentPresenter VerticalAlignment="Center"/>
+                                <Path x:Name="SortArrow" Data="M 0 0 L 4 4 L 8 0 Z" Fill="#94A3B8" Margin="4,1,0,0"
+                                      Width="8" Height="5" Stretch="Fill" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="SortDirection" Value="Ascending">
+                                <Setter TargetName="SortArrow" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="SortArrow" Property="Data" Value="M 0 4 L 4 0 L 8 4 Z"/>
+                                <Setter TargetName="SortArrow" Property="Fill" Value="{StaticResource AccentBlueBrush}"/>
+                            </Trigger>
+                            <Trigger Property="SortDirection" Value="Descending">
+                                <Setter TargetName="SortArrow" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="SortArrow" Property="Fill" Value="{StaticResource AccentBlueBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#DCE3ED"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#DBEAFE"/>
+                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ==================== CARD BORDER ==================== -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="18"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="Black"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.12" Color="Black"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ==================== STAT CARD ==================== -->
+        <Style x:Key="StatCard" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,1"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform Y="0"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.08" Color="Black"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="26" ShadowDepth="6" Opacity="0.16" Color="Black"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <TranslateTransform Y="-3"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ==================== TOOLTIP STYLE ==================== -->
+        <Style TargetType="ToolTip">
+            <Setter Property="Background" Value="#1B3044"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Background="#1B3044" CornerRadius="6" Padding="{TemplateBinding Padding}"
+                                BorderBrush="#38BDF8" BorderThickness="0,0,0,2" SnapsToDevicePixels="True">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="14" ShadowDepth="3" Opacity="0.35" Color="Black"/>
+                            </Border.Effect>
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ==================== DATEPICKER STYLE ==================== -->
+        <Style TargetType="DatePicker">
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="#FAFAF8"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- P&L cell style — green for positive, red for negative -->
+        <Style x:Key="PnLCell" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+        </Style>
+
+        <!-- Direction cell style — color Long/Short -->
+        <Style x:Key="DirCell" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Section header text style -->
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="Margin" Value="2,0,0,6"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+        <Style x:Key="ParamLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <!-- ==================== THIN MODERN SCROLLBAR ==================== -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="6"/>
+            <Setter Property="MinWidth" Value="6"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="#C8CBD5E1" CornerRadius="3" Margin="1,0"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Width" Value="Auto"/>
+                    <Setter Property="Height" Value="6"/>
+                    <Setter Property="MinHeight" Value="6"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ==================== HEADER BANNER ==================== -->
+        <Border Padding="28,18,28,16" Margin="0" BorderBrush="#0A2540" BorderThickness="0,0,0,1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0.4">
+                    <GradientStop Color="#162336" Offset="0"/>
+                    <GradientStop Color="#1B3A54" Offset="0.6"/>
+                    <GradientStop Color="#1D4468" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock FontSize="26" FontWeight="Bold" Foreground="White" FontFamily="Segoe UI">
+                        <TextBlock.Effect>
+                            <DropShadowEffect BlurRadius="16" ShadowDepth="0" Opacity="0.3" Color="#38BDF8"/>
+                        </TextBlock.Effect>
+                        <Run Text="ES"/>
+                        <Run Text=" 5-Min Visual Backtesting Terminal" FontWeight="Light" Foreground="#B0C8E0"/>
+                    </TextBlock>
+                    <TextBlock Margin="0,5,0,0" FontSize="11.5" FontFamily="Consolas">
+                        <Run Text="ES Futures" Foreground="#8CB4D8" FontWeight="SemiBold"/>
+                        <Run Text="  ·  " Foreground="#3A5A78"/>
+                        <Run Text="5-Min RTH" Foreground="#7BA3C4"/>
+                        <Run Text="  ·  " Foreground="#3A5A78"/>
+                        <Run Text="$50/pt" Foreground="#7BA3C4"/>
+                        <Run Text="  ·  " Foreground="#3A5A78"/>
+                        <Run Text="Multi-Strategy + Walk-Forward" Foreground="#7BA3C4"/>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding CurrentPacificTime}" FontSize="18" FontWeight="SemiBold" FontFamily="Consolas" Foreground="White" HorizontalAlignment="Right"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
+                        <Grid VerticalAlignment="Center" Margin="0,0,5,0" Width="9" Height="9">
+                            <Ellipse Width="9" Height="9" Fill="#00B894" Opacity="0.35">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard RepeatBehavior="Forever">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                    From="0.35" To="0.05" Duration="0:0:1.5" AutoReverse="True"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <Ellipse Width="7" Height="7" Fill="#00B894" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <TextBlock Text="{Binding ConnectionStatus}" Foreground="#7BA3C4" FontSize="11.5" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding AccountSummary}" Margin="0,3,0,0" Foreground="#7BA3C4" FontSize="11.5" HorizontalAlignment="Right" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ==================== MAIN CONTENT ==================== -->
+        <TabControl Grid.Row="1" Margin="12,0,12,12">
+
+            <!-- ============ CHART TAB ============ -->
+            <TabItem Header="Chart">
+                <Border Background="#1E1E2E" CornerRadius="0,0,10,10" Margin="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="160"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Margin="10,10,10,4" Padding="10,7" CornerRadius="8">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                    <GradientStop Color="#252540" Offset="0"/>
+                                    <GradientStop Color="#2A2A4A" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <WrapPanel VerticalAlignment="Center">
+                                <Button Width="92" Height="30" Margin="0,0,6,0" Background="{StaticResource AccentGreenBrush}" Style="{StaticResource PillButton}" Command="{Binding StartCommand}" ToolTip="Connect to IBKR and start live strategy">
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#x25B6;" FontSize="10" Margin="0,0,5,0" VerticalAlignment="Center"/><TextBlock Text="Start" VerticalAlignment="Center"/></StackPanel>
+                                </Button>
+                                <Button Width="88" Height="30" Margin="0,0,6,0" Background="{StaticResource AccentAmberBrush}" Style="{StaticResource PillButton}" Command="{Binding StopCommand}" ToolTip="Gracefully stop the strategy">
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#x25A0;" FontSize="9" Margin="0,0,5,0" VerticalAlignment="Center"/><TextBlock Text="Stop" VerticalAlignment="Center"/></StackPanel>
+                                </Button>
+                                <Button Width="105" Height="30" Margin="0,0,6,0" Background="{StaticResource AccentRedBrush}" Style="{StaticResource PillButton}" Command="{Binding KillSwitchCommand}" ToolTip="Emergency: flatten all positions immediately">
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#x26A0;" FontSize="10" Margin="0,0,4,0" VerticalAlignment="Center"/><TextBlock Text="Kill Switch" VerticalAlignment="Center"/></StackPanel>
+                                </Button>
+                                <Button Width="110" Height="30" Background="{StaticResource AccentBlueBrush}" Style="{StaticResource PillButton}" Command="{Binding RefreshCommand}" ToolTip="Save current parameters to config file">
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#x2B07;" FontSize="10" Margin="0,0,5,0" VerticalAlignment="Center"/><TextBlock Text="Save Config" VerticalAlignment="Center"/></StackPanel>
+                                </Button>
+                                <TextBlock Margin="20,0,0,0" VerticalAlignment="Center" Foreground="#8690A0" FontSize="12">
+                                    <Run Text="Status: "/><Run Text="{Binding StrategyStatus, Mode=OneWay}" Foreground="#00B894" FontWeight="SemiBold"/>
+                                    <Run Text="  |  Signal: "/><Run Text="{Binding LatestSignal, Mode=OneWay}" Foreground="White" FontWeight="SemiBold"/>
+                                    <Run Text="  |  "/><Run Text="{Binding LatestReason, Mode=OneWay}" Foreground="#8690A0"/>
+                                </TextBlock>
+                            </WrapPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Background="#1A1A2A" Margin="10,2,10,4" Padding="12,5" CornerRadius="6">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="LAST" Foreground="#5A6A7A" Margin="0,0,6,0" VerticalAlignment="Center" FontSize="9" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding LastPrice}" Foreground="White" FontWeight="Bold" FontSize="17" FontFamily="Consolas" Margin="0,0,20,0" VerticalAlignment="Center"/>
+                                <Border Width="1" Background="#2A2A40" Margin="0,2,14,2"/>
+                                <TextBlock Text="H" Foreground="#5A6A7A" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="9" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding SessionHigh}" Foreground="#00B894" FontWeight="Bold" FontFamily="Consolas" FontSize="13" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="L" Foreground="#5A6A7A" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="9" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding SessionLow}" Foreground="#E17055" FontWeight="Bold" FontFamily="Consolas" FontSize="13" Margin="0,0,20,0" VerticalAlignment="Center"/>
+                                <Border Width="1" Background="#2A2A40" Margin="0,2,14,2"/>
+                                <TextBlock Text="BARS" Foreground="#5A6A7A" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="9" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding ChartBarCount}" Foreground="#94A3B8" FontFamily="Consolas" FontSize="12" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <controls:ChartCanvas Grid.Row="2" Margin="4,0,4,4"
+                            Bars="{Binding ChartBars}"
+                            FastEmaValues="{Binding FastEmaValues}"
+                            SlowEmaValues="{Binding SlowEmaValues}"
+                            Signals="{Binding ChartSignals}"/>
+
+                        <!-- Log panel separator -->
+                        <GridSplitter Grid.Row="3" Height="4" HorizontalAlignment="Stretch" Background="#252540" Cursor="SizeNS"/>
+
+                        <!-- Live log panel -->
+                        <Border Grid.Row="4" Background="#16161E" Margin="4,0,4,4" CornerRadius="6">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Border Margin="10,5,10,4" Padding="8,3" CornerRadius="4" Background="#1A1A28" HorizontalAlignment="Left">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Grid VerticalAlignment="Center" Margin="0,0,6,0" Width="7" Height="7">
+                                            <Ellipse Width="7" Height="7" Fill="#00B894" Opacity="0.4">
+                                                <Ellipse.Triggers>
+                                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever">
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                    From="0.4" To="0.08" Duration="0:0:1.2" AutoReverse="True"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </Ellipse.Triggers>
+                                            </Ellipse>
+                                            <Ellipse Width="5" Height="5" Fill="#00B894" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Grid>
+                                        <TextBlock Text="LIVE LOG" FontSize="10" FontWeight="SemiBold" Foreground="#7BA3C4" VerticalAlignment="Center"/>
+                                        <Border Background="#252540" CornerRadius="3" Padding="5,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Logs.Count, FallbackValue='0'}" FontSize="9" Foreground="#64748B" FontFamily="Consolas"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                                <ListBox Grid.Row="1" ItemsSource="{Binding Logs}" Background="Transparent" BorderThickness="0"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" FontFamily="Consolas" FontSize="11"
+                                         AlternationCount="2">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock TextWrapping="NoWrap">
+                                                <Run Text="{Binding TimestampLocal, Mode=OneTime}" Foreground="#64748B"/>
+                                                <Run Text=" [" Foreground="#4A5568"/><Run Text="{Binding Category, Mode=OneTime}" Foreground="#38BDF8"/><Run Text="] " Foreground="#4A5568"/>
+                                                <Run Text="{Binding Message, Mode=OneTime}" Foreground="#CBD5E1"/>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="Padding" Value="8,1"/>
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Focusable" Value="False"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                                    <Setter Property="Background" Value="#0AFFFFFF"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#15FFFFFF"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- ============ BACKTEST TAB ============ -->
+            <TabItem Header="Backtest">
+                <Border Background="#EFECEA" CornerRadius="0,0,10,10">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16,12">
+                <StackPanel Margin="0">
+
+                    <!-- ====== DATA MANAGEMENT CARD ====== -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionLabel}" Margin="0,0,0,10"><Run Text="&#x2630; " Foreground="#2B6CB0"/><Run Text="DATA MANAGEMENT"/></TextBlock>
+                            <WrapPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,14,0">
+                                    <TextBlock Text="Start" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#64748B" FontSize="12"/>
+                                    <DatePicker SelectedDate="{Binding Backtest.DownloadStartDate}" Width="128"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
+                                    <TextBlock Text="End" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#64748B" FontSize="12"/>
+                                    <DatePicker SelectedDate="{Binding Backtest.DownloadEndDate}" Width="128"/>
+                                </StackPanel>
+                                <Button Content="Download IBKR" Width="128" Height="32" Background="{StaticResource AccentBlueBrush}" Style="{StaticResource PillButton}" Command="{Binding Backtest.DownloadCommand}" Margin="0,0,6,0"/>
+                                <Button Content="Import CSV" Width="108" Height="32" Background="{StaticResource AccentGreenBrush}" Style="{StaticResource PillButton}" Command="{Binding Backtest.ImportCsvCommand}" Margin="0,0,6,0"/>
+                                <Button Content="Verify TV CSV" Width="116" Height="32" Background="{StaticResource AccentAmberBrush}" Style="{StaticResource PillButton}" Command="{Binding Backtest.VerifyCommand}" Margin="0,0,6,0"/>
+                                <Button Content="Cancel" Width="80" Height="32" Background="{StaticResource AccentRedBrush}" Style="{StaticResource PillButton}" Command="{Binding Backtest.CancelCommand}"/>
+                            </WrapPanel>
+                            <ProgressBar Value="{Binding Backtest.DownloadProgress}" Maximum="100" Margin="0,10,0,0"/>
+                            <Border Margin="0,8,0,0" Background="#F8FAFC" CornerRadius="6" Padding="10,5">
+                                <WrapPanel VerticalAlignment="Center">
+                                    <Border Background="#EFF6FF" CornerRadius="4" Padding="6,2" Margin="0,0,12,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Backtest.DbStatus}" Foreground="{StaticResource AccentBlueBrush}" FontWeight="SemiBold" FontSize="11.5" FontFamily="Consolas"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding Backtest.DownloadStatus}" Foreground="#64748B" FontSize="11.5" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                </WrapPanel>
+                            </Border>
+                            <TextBlock Text="{Binding Backtest.VerificationStatus}" Foreground="{StaticResource AccentAmberBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Backtest.VerificationStatus}" Value="">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Backtest.VerificationStatus}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ====== STRATEGY PARAMETERS (COLLAPSIBLE) ====== -->
+                    <Border Style="{StaticResource Card}">
+                        <Expander Header="STRATEGY PARAMETERS" IsExpanded="False" Margin="-2,-4,-2,-4">
+                            <StackPanel Margin="0,10,0,0">
+                                <!-- General -->
+                                <TextBlock Text="General" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                <UniformGrid Columns="5" Margin="0,0,0,6">
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Fast EMA" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.FastEma}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Slow EMA" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.SlowEma}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="ATR Period" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.AtrPeriod}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="ATR Multiplier" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.AtrMultiplier}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,6"><TextBlock Text="Reward:Risk" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.RewardRiskRatio}"/></StackPanel>
+                                </UniformGrid>
+
+                                <!-- Strategy Toggles -->
+                                <Border Height="1" Background="#E2E8F0" Margin="0,8,0,10"/>
+                                <TextBlock Text="Strategy Toggles" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                <WrapPanel Margin="0,0,0,6">
+                                    <CheckBox Content="EMA Pullback" IsChecked="{Binding Backtest.EnableStrategy1}" Margin="0,0,20,0"/>
+                                    <CheckBox Content="S/R Reversal" IsChecked="{Binding Backtest.EnableStrategy2}" Margin="0,0,20,0"/>
+                                    <CheckBox Content="50% Pullback" IsChecked="{Binding Backtest.EnableStrategy3}" Margin="0,0,20,0"/>
+                                    <CheckBox Content="Momentum" IsChecked="{Binding Backtest.EnableStrategy4}" Margin="0,0,20,0"/>
+                                    <CheckBox Content="Hourly Bias" IsChecked="{Binding Backtest.EnableHourlyBias}"/>
+                                </WrapPanel>
+
+                                <!-- Hourly / SR / Momentum -->
+                                <Border Height="1" Background="#E2E8F0" Margin="0,8,0,10"/>
+                                <TextBlock Text="Hourly Bias, S/R, Momentum" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                <UniformGrid Columns="5" Margin="0,0,0,4">
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Hourly Lookback" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.HourlyRangeLookback}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Range Top %" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.RangeTopPct}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Range Bottom %" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.RangeBottomPct}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Swing Lookback" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.SwingLookback}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,6"><TextBlock Text="SR Cluster ATR" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.SRClusterAtrFactor}"/></StackPanel>
+                                </UniformGrid>
+                                <UniformGrid Columns="5" Margin="0,0,0,4">
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Big Move ATR" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.BigMoveAtrFactor}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Momentum Bars" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.MomentumBars}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Mom Body/ATR" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.MomentumBodyAtrRatio}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Tick Size" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.TickSize}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,6"><TextBlock Text="Pullback Tol" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.PullbackTolerance}"/></StackPanel>
+                                </UniformGrid>
+
+                                <!-- Risk -->
+                                <Border Height="1" Background="#E2E8F0" Margin="0,8,0,10"/>
+                                <TextBlock Text="Risk Parameters" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+                                <UniformGrid Columns="5">
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Max Trades/Day" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.MaxTradesPerDay}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Max Losses/Day" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.MaxLossesPerDay}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Max Stop (pts)" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.MaxStopPoints}"/></StackPanel>
+                                    <StackPanel Margin="0,0,10,6"><TextBlock Text="Max Daily Loss (pts)" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.MaxDailyLossPoints}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,6"><TextBlock Text="Starting Capital" Style="{StaticResource ParamLabel}"/><TextBox Text="{Binding Backtest.StartingCapital}"/></StackPanel>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Expander>
+                    </Border>
+
+                    <!-- ====== RUN CONTROLS CARD ====== -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionLabel}" Margin="0,0,0,10"><Run Text="&#x25B6; " Foreground="#0F9D7A"/><Run Text="RUN CONTROLS"/></TextBlock>
+                            <WrapPanel>
+                                <TextBlock Text="From:" VerticalAlignment="Center" Margin="0,0,4,0" Foreground="#64748B" FontSize="12"/>
+                                <DatePicker SelectedDate="{Binding Backtest.BacktestStartDate}" Width="128" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <TextBlock Text="To:" VerticalAlignment="Center" Margin="0,0,4,0" Foreground="#64748B" FontSize="12"/>
+                                <DatePicker SelectedDate="{Binding Backtest.BacktestEndDate}" Width="128" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                <Button Width="170" Height="38" Margin="0,0,8,0" Background="{StaticResource AccentGreenBrush}" Style="{StaticResource PillButton}" FontSize="13" Command="{Binding Backtest.RunAllStrategiesCommand}" ToolTip="Run backtest for all enabled strategies">
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#x25B6;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Run All Strategies" VerticalAlignment="Center"/></StackPanel>
+                                </Button>
+                                <Button Width="160" Height="38" Margin="0,0,8,0" Background="{StaticResource AccentBlueBrush}" Style="{StaticResource PillButton}" FontSize="13" Command="{Binding Backtest.RunBacktestCommand}" ToolTip="Run backtest with current parameters">
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#x25B6;" Margin="0,0,6,0" VerticalAlignment="Center"/><TextBlock Text="Run Single" VerticalAlignment="Center"/></StackPanel>
+                                </Button>
+                                <Button Width="90" Height="38" Margin="0,0,24,0" Background="{StaticResource AccentRedBrush}" Style="{StaticResource PillButton}" FontSize="13" Command="{Binding Backtest.CancelCommand}" ToolTip="Cancel running backtest">
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#x25A0;" Margin="0,0,5,0" VerticalAlignment="Center"/><TextBlock Text="Cancel" VerticalAlignment="Center"/></StackPanel>
+                                </Button>
+                                <CheckBox Content="Walk-Forward" IsChecked="{Binding Backtest.EnableWalkForward}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"/>
+                                <TextBlock Text="OOS Cutoff:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#64748B" FontSize="12"/>
+                                <DatePicker SelectedDate="{Binding Backtest.OosCutoffDate}" Width="128" VerticalAlignment="Center"/>
+                            </WrapPanel>
+                            <ProgressBar Value="{Binding Backtest.RunProgress}" Maximum="100" Margin="0,12,0,0"/>
+                            <Border Margin="0,8,0,0" Background="#F8FAFC" CornerRadius="6" Padding="12,6">
+                                <WrapPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Backtest.RunStatus}" Foreground="#64748B" FontSize="12" TextWrapping="Wrap" Margin="0,0,20,0" VerticalAlignment="Center"/>
+                                    <Border Background="#F0FDF4" CornerRadius="4" Padding="8,3" Margin="0,0,10,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Backtest.IsNetPnL}" Foreground="{StaticResource AccentGreenBrush}" FontWeight="Bold" FontSize="12.5" FontFamily="Consolas"/>
+                                    </Border>
+                                    <Border Background="#EFF6FF" CornerRadius="4" Padding="8,3" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Backtest.OosNetPnL}" Foreground="{StaticResource AccentBlueBrush}" FontWeight="Bold" FontSize="12.5" FontFamily="Consolas"/>
+                                    </Border>
+                                </WrapPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ====== STATS CARDS ROW ====== -->
+                    <UniformGrid Columns="6" Margin="0,0,0,10">
+                        <Border Style="{StaticResource StatCard}" Margin="0,0,5,0">
+                            <Grid>
+                                <Border Background="{StaticResource AccentGreenBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/>
+                                <StackPanel Margin="2,0,0,0">
+                                    <TextBlock Text="NET P&amp;L" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="{Binding Backtest.NetPnL}" FontSize="24" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource StatCard}" Margin="3,0">
+                            <Grid>
+                                <Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/>
+                                <StackPanel Margin="2,0,0,0">
+                                    <TextBlock Text="WIN RATE" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="{Binding Backtest.WinRate}" FontSize="24" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource StatCard}" Margin="3,0">
+                            <Grid>
+                                <Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/>
+                                <StackPanel Margin="2,0,0,0">
+                                    <TextBlock Text="SHARPE" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="{Binding Backtest.Sharpe}" FontSize="24" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource StatCard}" Margin="3,0">
+                            <Grid>
+                                <Border Background="{StaticResource AccentRedBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/>
+                                <StackPanel Margin="2,0,0,0">
+                                    <TextBlock Text="MAX DD" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="{Binding Backtest.MaxDrawdown}" FontSize="24" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource StatCard}" Margin="3,0">
+                            <Grid>
+                                <Border Background="{StaticResource AccentAmberBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/>
+                                <StackPanel Margin="2,0,0,0">
+                                    <TextBlock Text="PROFIT FACTOR" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="{Binding Backtest.ProfitFactor}" FontSize="24" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource StatCard}" Margin="5,0,0,0">
+                            <Grid>
+                                <Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/>
+                                <StackPanel Margin="2,0,0,0">
+                                    <TextBlock Text="TOTAL TRADES" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/>
+                                    <TextBlock Text="{Binding Backtest.TotalTrades}" FontSize="24" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- ====== EQUITY CURVE ====== -->
+                    <TextBlock Style="{StaticResource SectionLabel}" Margin="2,4,0,6">
+                        <Run Text="&#x1F4C8; " FontSize="9"/>
+                        <Run Text="EQUITY CURVE"/>
+                    </TextBlock>
+                    <Border Background="#1E1E2E" CornerRadius="12" Height="280" Margin="0,0,0,10">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.08" Color="Black"/>
+                        </Border.Effect>
+                        <controls:EquityCurveCanvas EquityCurve="{Binding Backtest.EquityCurve}" Margin="4"/>
+                    </Border>
+
+                    <!-- ====== RESULTS TAB CONTROL ====== -->
+                    <TextBlock Style="{StaticResource SectionLabel}" Margin="2,4,0,6">
+                        <Run Text="&#x1F4CA; " FontSize="9"/>
+                        <Run Text="RESULTS"/>
+                    </TextBlock>
+                    <Border Background="White" CornerRadius="12" Padding="0" Margin="0,0,0,16">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="Black"/>
+                        </Border.Effect>
+                        <TabControl SelectedIndex="{Binding Backtest.SelectedTabIndex}" MinHeight="820" Padding="0">
+
+                            <!-- Tab: All Trades -->
+                            <TabItem Header="All Trades">
+                                <DataGrid ItemsSource="{Binding Backtest.Trades}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="#" Binding="{Binding TradeNumber}" Width="40"/>
+                                        <DataGridTextColumn Header="Strategy" Binding="{Binding StrategyName}" Width="105"/>
+                                        <DataGridTextColumn Header="Entry Time" Binding="{Binding EntryTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="135"/>
+                                        <DataGridTextColumn Header="Exit Time" Binding="{Binding ExitTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="135"/>
+                                        <DataGridTextColumn Header="Dir" Binding="{Binding Direction}" Width="50" CellStyle="{StaticResource DirCell}"/>
+                                        <DataGridTextColumn Header="Entry" Binding="{Binding EntryPrice, StringFormat=F2}" Width="72" FontFamily="Consolas"/>
+                                        <DataGridTextColumn Header="Exit" Binding="{Binding ExitPrice, StringFormat=F2}" Width="72" FontFamily="Consolas"/>
+                                        <DataGridTextColumn Header="Exit Reason" Binding="{Binding ExitReason}" Width="92"/>
+                                        <DataGridTextColumn Header="P&amp;L Pts" Binding="{Binding PnLPoints, StringFormat=F2}" Width="68" CellStyle="{StaticResource PnLCell}"/>
+                                        <DataGridTextColumn Header="P&amp;L $" Binding="{Binding PnLDollars, StringFormat=N2}" Width="82" CellStyle="{StaticResource PnLCell}"/>
+                                        <DataGridTextColumn Header="Hold" Binding="{Binding HoldTimeFormatted}" Width="58"/>
+                                        <DataGridTextColumn Header="MAE" Binding="{Binding MAE, StringFormat=F2}" Width="55" FontFamily="Consolas"/>
+                                        <DataGridTextColumn Header="MFE" Binding="{Binding MFE, StringFormat=F2}" Width="55" FontFamily="Consolas"/>
+                                        <DataGridTextColumn Header="Entry Reason" Binding="{Binding EntryReason}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </TabItem>
+
+                            <!-- Tab: EmaPullback -->
+                            <TabItem Header="EMA Pullback">
+                                <Grid Margin="12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Border CornerRadius="8" Padding="12,8" Margin="0,0,0,8" BorderThickness="3,1,1,1">
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                                <GradientStop Color="#2B6CB0" Offset="0"/>
+                                                <GradientStop Color="#E2E8F0" Offset="0.15"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                                <GradientStop Color="#F8FAFC" Offset="0"/>
+                                                <GradientStop Color="#EEF2FF" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <TextBlock FontWeight="SemiBold" FontSize="13" Foreground="#1B3044" FontFamily="Consolas">
+                                            <Run Text="&#x25B8; " Foreground="#2B6CB0"/><Run Text="{Binding Backtest.Stats1, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Border>
+                                    <Border Grid.Row="1" CornerRadius="10" ClipToBounds="True">
+                                        <controls:PnLCalendarCanvas x:Name="Calendar1"
+                                            DailySummaries="{Binding Backtest.CalendarSummaries1}"
+                                            DateSelected="OnCalendarDateSelected1"
+                                            ToolTip="Click a date to open day detail"/>
+                                    </Border>
+                                </Grid>
+                            </TabItem>
+
+                            <!-- Tab: SRReversal -->
+                            <TabItem Header="S/R Reversal">
+                                <Grid Margin="12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Border CornerRadius="8" Padding="12,8" Margin="0,0,0,8" BorderThickness="3,1,1,1">
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                                <GradientStop Color="#2B6CB0" Offset="0"/>
+                                                <GradientStop Color="#E2E8F0" Offset="0.15"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                                <GradientStop Color="#F8FAFC" Offset="0"/>
+                                                <GradientStop Color="#EEF2FF" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <TextBlock FontWeight="SemiBold" FontSize="13" Foreground="#1B3044" FontFamily="Consolas">
+                                            <Run Text="&#x25B8; " Foreground="#2B6CB0"/><Run Text="{Binding Backtest.Stats2, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Border>
+                                    <Border Grid.Row="1" CornerRadius="10" ClipToBounds="True">
+                                        <controls:PnLCalendarCanvas x:Name="Calendar2"
+                                            DailySummaries="{Binding Backtest.CalendarSummaries2}"
+                                            DateSelected="OnCalendarDateSelected2"
+                                            ToolTip="Click a date to open day detail"/>
+                                    </Border>
+                                </Grid>
+                            </TabItem>
+
+                            <!-- Tab: FiftyPctPullback -->
+                            <TabItem Header="50% Pullback">
+                                <Grid Margin="12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Border CornerRadius="8" Padding="12,8" Margin="0,0,0,8" BorderThickness="3,1,1,1">
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                                <GradientStop Color="#2B6CB0" Offset="0"/>
+                                                <GradientStop Color="#E2E8F0" Offset="0.15"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                                <GradientStop Color="#F8FAFC" Offset="0"/>
+                                                <GradientStop Color="#EEF2FF" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <TextBlock FontWeight="SemiBold" FontSize="13" Foreground="#1B3044" FontFamily="Consolas">
+                                            <Run Text="&#x25B8; " Foreground="#2B6CB0"/><Run Text="{Binding Backtest.Stats3, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Border>
+                                    <Border Grid.Row="1" CornerRadius="10" ClipToBounds="True">
+                                        <controls:PnLCalendarCanvas x:Name="Calendar3"
+                                            DailySummaries="{Binding Backtest.CalendarSummaries3}"
+                                            DateSelected="OnCalendarDateSelected3"
+                                            ToolTip="Click a date to open day detail"/>
+                                    </Border>
+                                </Grid>
+                            </TabItem>
+
+                            <!-- Tab: Momentum -->
+                            <TabItem Header="Momentum">
+                                <Grid Margin="12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Border CornerRadius="8" Padding="12,8" Margin="0,0,0,8" BorderThickness="3,1,1,1">
+                                        <Border.BorderBrush>
+                                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                                <GradientStop Color="#2B6CB0" Offset="0"/>
+                                                <GradientStop Color="#E2E8F0" Offset="0.15"/>
+                                            </LinearGradientBrush>
+                                        </Border.BorderBrush>
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                                <GradientStop Color="#F8FAFC" Offset="0"/>
+                                                <GradientStop Color="#EEF2FF" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <TextBlock FontWeight="SemiBold" FontSize="13" Foreground="#1B3044" FontFamily="Consolas">
+                                            <Run Text="&#x25B8; " Foreground="#2B6CB0"/><Run Text="{Binding Backtest.Stats4, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </Border>
+                                    <Border Grid.Row="1" CornerRadius="10" ClipToBounds="True">
+                                        <controls:PnLCalendarCanvas x:Name="Calendar4"
+                                            DailySummaries="{Binding Backtest.CalendarSummaries4}"
+                                            DateSelected="OnCalendarDateSelected4"
+                                            ToolTip="Click a date to open day detail"/>
+                                    </Border>
+                                </Grid>
+                            </TabItem>
+
+                            <!-- Tab: Monthly Returns -->
+                            <TabItem Header="Monthly Returns">
+                                <DataGrid ItemsSource="{Binding Backtest.MonthlyReturns}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Year" Binding="{Binding Year}" Width="80" FontFamily="Consolas"/>
+                                        <DataGridTextColumn Header="Month" Binding="{Binding Month}" Width="80"/>
+                                        <DataGridTextColumn Header="P&amp;L" Binding="{Binding PnL, StringFormat=N2}" Width="120" CellStyle="{StaticResource PnLCell}"/>
+                                        <DataGridTextColumn Header="Return %" Binding="{Binding ReturnPct, StringFormat=F2}" Width="100" CellStyle="{StaticResource PnLCell}"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </TabItem>
+                        </TabControl>
+                    </Border>
+
+                </StackPanel>
+                </ScrollViewer>
+                </Border>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
