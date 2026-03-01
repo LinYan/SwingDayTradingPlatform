@@ -138,4 +138,161 @@ public class RMetricsTests
         var result = ResultCalculator.CalculateAvgRPerTrade(trades);
         Assert.Equal(0.5m, result); // (2 + -1) / 2 = 0.5
     }
+
+    // --- Advanced Metrics Tests ---
+
+    [Fact]
+    public void CalmarRatio_PositiveCAGR_CorrectRatio()
+    {
+        var calmar = ResultCalculator.CalculateCalmarRatio(20m, 10m);
+        Assert.Equal(2.0m, calmar); // 20/10 = 2
+    }
+
+    [Fact]
+    public void CalmarRatio_ZeroDrawdown_ReturnsCapped()
+    {
+        var calmar = ResultCalculator.CalculateCalmarRatio(10m, 0m);
+        Assert.Equal(999.99m, calmar);
+    }
+
+    [Fact]
+    public void RecoveryFactor_Correct()
+    {
+        var rf = ResultCalculator.CalculateRecoveryFactor(5000m, 1000m);
+        Assert.Equal(5.0m, rf);
+    }
+
+    [Fact]
+    public void RecoveryFactor_ZeroDrawdown_ReturnsCapped()
+    {
+        var rf = ResultCalculator.CalculateRecoveryFactor(5000m, 0m);
+        Assert.Equal(999.99m, rf);
+    }
+
+    [Fact]
+    public void PayoffRatio_Correct()
+    {
+        var ratio = ResultCalculator.CalculatePayoffRatio(6m, 3m);
+        Assert.Equal(2.0m, ratio);
+    }
+
+    [Fact]
+    public void MaxConsecutiveWinsLosses_Correct()
+    {
+        var trades = new List<BacktestTrade>
+        {
+            MakeTrade(4m, 2m, 1),   // W
+            MakeTrade(2m, 2m, 2),   // W
+            MakeTrade(3m, 2m, 3),   // W (streak=3)
+            MakeTrade(-2m, 2m, 4),  // L
+            MakeTrade(-1m, 2m, 5),  // L (streak=2)
+            MakeTrade(5m, 2m, 6),   // W
+        };
+
+        var (maxWins, maxLosses) = ResultCalculator.CalculateMaxConsecutiveWinsLosses(trades);
+        Assert.Equal(3, maxWins);
+        Assert.Equal(2, maxLosses);
+    }
+
+    [Fact]
+    public void MaxConsecutiveWinsLosses_Empty_ReturnsZeros()
+    {
+        var (maxWins, maxLosses) = ResultCalculator.CalculateMaxConsecutiveWinsLosses([]);
+        Assert.Equal(0, maxWins);
+        Assert.Equal(0, maxLosses);
+    }
+
+    [Fact]
+    public void HoldTimes_Correct()
+    {
+        var baseTime = new DateTimeOffset(2024, 6, 10, 14, 0, 0, TimeSpan.Zero);
+        var t1 = new BacktestTrade(1, baseTime, baseTime.AddMinutes(30),
+            5000, 5005, "Long", "Target", 5, 250, 0);
+        var t2 = new BacktestTrade(2, baseTime, baseTime.AddMinutes(60),
+            5000, 5003, "Long", "Target", 3, 150, 0);
+
+        var (avg, max) = ResultCalculator.CalculateHoldTimes([t1, t2]);
+        Assert.Equal(45m, avg); // (30 + 60) / 2
+        Assert.Equal(60m, max);
+    }
+
+    [Fact]
+    public void UlcerIndex_FlatEquity_ReturnsZero()
+    {
+        var curve = new List<EquityPoint>
+        {
+            new(DateTimeOffset.UtcNow.AddMinutes(-20), 25000m, 0),
+            new(DateTimeOffset.UtcNow.AddMinutes(-10), 25000m, 0),
+            new(DateTimeOffset.UtcNow, 25000m, 0),
+        };
+
+        var ui = ResultCalculator.CalculateUlcerIndex(curve);
+        Assert.Equal(0m, ui);
+    }
+
+    [Fact]
+    public void UlcerIndex_WithDrawdown_Positive()
+    {
+        var curve = new List<EquityPoint>
+        {
+            new(DateTimeOffset.UtcNow.AddMinutes(-20), 25000m, 0),
+            new(DateTimeOffset.UtcNow.AddMinutes(-10), 24000m, 4m),
+            new(DateTimeOffset.UtcNow, 25500m, 0),
+        };
+
+        var ui = ResultCalculator.CalculateUlcerIndex(curve);
+        Assert.True(ui > 0);
+    }
+
+    [Fact]
+    public void TailRatio_InsufficientTrades_ReturnsZero()
+    {
+        var trades = Enumerable.Range(1, 5).Select(i => MakeTrade(4m, 2m, i)).ToList();
+        Assert.Equal(0m, ResultCalculator.CalculateTailRatio(trades));
+    }
+
+    [Fact]
+    public void MfeEfficiency_CorrectCalculation()
+    {
+        var t1 = new BacktestTrade(1, DateTimeOffset.UtcNow.AddMinutes(-10), DateTimeOffset.UtcNow,
+            5000, 5005, "Long", "Target", 5, 250, 0) { MFE = 10m };
+        var t2 = new BacktestTrade(2, DateTimeOffset.UtcNow.AddMinutes(-10), DateTimeOffset.UtcNow,
+            5000, 5003, "Long", "Target", 3, 150, 0) { MFE = 6m };
+
+        var eff = ResultCalculator.CalculateMfeEfficiency([t1, t2]);
+        Assert.Equal(0.5m, eff); // (5/10 + 3/6) / 2 = 0.5
+    }
+
+    [Fact]
+    public void MaeRatio_CorrectCalculation()
+    {
+        var t1 = new BacktestTrade(1, DateTimeOffset.UtcNow.AddMinutes(-10), DateTimeOffset.UtcNow,
+            5000, 5005, "Long", "Target", 5, 250, 0)
+            { MAE = 1.5m, InitialStopDistance = 3m };
+        var t2 = new BacktestTrade(2, DateTimeOffset.UtcNow.AddMinutes(-10), DateTimeOffset.UtcNow,
+            5000, 5003, "Long", "Target", 3, 150, 0)
+            { MAE = 1m, InitialStopDistance = 4m };
+
+        var ratio = ResultCalculator.CalculateMaeRatio([t1, t2]);
+        Assert.Equal(0.375m, ratio); // (1.5/3 + 1/4) / 2 = (0.5 + 0.25) / 2 = 0.375
+    }
+
+    [Fact]
+    public void CAGR_PositiveGrowth_PositiveCAGR()
+    {
+        var dailyReturns = new List<DailyReturn>
+        {
+            new(new DateOnly(2023, 1, 1), 100m, 1),
+            new(new DateOnly(2024, 1, 1), 100m, 1),
+        };
+
+        var cagr = ResultCalculator.CalculateCAGR(25000m, 30000m, dailyReturns);
+        Assert.True(cagr > 0);
+    }
+
+    [Fact]
+    public void CAGR_NoTrades_ReturnsZero()
+    {
+        Assert.Equal(0m, ResultCalculator.CalculateCAGR(25000m, 30000m, []));
+    }
 }

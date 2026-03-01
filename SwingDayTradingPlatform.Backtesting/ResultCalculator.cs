@@ -41,6 +41,18 @@ public static class ResultCalculator
         var maxDrawdownR = CalculateMaxDrawdownR(trades);
         var rDistribution = CalculateRDistribution(trades);
 
+        // Advanced metrics
+        var cagr = CalculateCAGR(config.StartingCapital, endingCapital, dailyReturns);
+        var calmar = CalculateCalmarRatio(cagr, maxDrawdownPct);
+        var recoveryFactor = CalculateRecoveryFactor(netPnL, maxDrawdown);
+        var payoffRatio = CalculatePayoffRatio(avgWinPoints, avgLossPoints);
+        var (maxConsWins, maxConsLosses) = CalculateMaxConsecutiveWinsLosses(trades);
+        var (avgHoldMin, maxHoldMin) = CalculateHoldTimes(trades);
+        var ulcerIndex = CalculateUlcerIndex(equityCurve);
+        var tailRatio = CalculateTailRatio(trades);
+        var mfeEfficiency = CalculateMfeEfficiency(trades);
+        var maeRatio = CalculateMaeRatio(trades);
+
         return new BacktestResult
         {
             Parameters = parameters,
@@ -70,7 +82,19 @@ public static class ResultCalculator
             AvgRPerTrade = avgRPerTrade,
             ExpectancyR = expectancyR,
             MaxDrawdownR = maxDrawdownR,
-            RDistribution = rDistribution
+            RDistribution = rDistribution,
+            CalmarRatio = calmar,
+            RecoveryFactor = recoveryFactor,
+            CAGR = cagr,
+            PayoffRatio = payoffRatio,
+            MaxConsecutiveWins = maxConsWins,
+            MaxConsecutiveLosses = maxConsLosses,
+            AvgHoldTimeMinutes = avgHoldMin,
+            MaxHoldTimeMinutes = maxHoldMin,
+            UlcerIndex = ulcerIndex,
+            TailRatio = tailRatio,
+            MfeEfficiency = mfeEfficiency,
+            MaeRatio = maeRatio
         };
     }
 
@@ -262,5 +286,132 @@ public static class ResultCalculator
         }
 
         return buckets;
+    }
+
+    public static decimal CalculateCAGR(decimal startingCapital, decimal endingCapital, List<DailyReturn> dailyReturns)
+    {
+        if (startingCapital <= 0 || endingCapital <= 0 || dailyReturns.Count < 2)
+            return 0m;
+
+        var totalDays = (dailyReturns[^1].Date.ToDateTime(TimeOnly.MinValue) -
+                         dailyReturns[0].Date.ToDateTime(TimeOnly.MinValue)).TotalDays;
+        if (totalDays <= 0) return 0m;
+
+        var years = totalDays / 365.25;
+        var ratio = (double)endingCapital / (double)startingCapital;
+        if (ratio <= 0) return 0m;
+
+        var cagr = Math.Pow(ratio, 1.0 / years) - 1.0;
+        return (decimal)(cagr * 100);
+    }
+
+    public static decimal CalculateCalmarRatio(decimal cagr, decimal maxDrawdownPct)
+    {
+        if (maxDrawdownPct <= 0) return cagr > 0 ? 999.99m : 0m;
+        return cagr / maxDrawdownPct;
+    }
+
+    public static decimal CalculateRecoveryFactor(decimal netPnL, decimal maxDrawdown)
+    {
+        if (maxDrawdown <= 0) return netPnL > 0 ? 999.99m : 0m;
+        return netPnL / maxDrawdown;
+    }
+
+    public static decimal CalculatePayoffRatio(decimal avgWinPoints, decimal avgLossPoints)
+    {
+        if (avgLossPoints <= 0) return avgWinPoints > 0 ? 999.99m : 0m;
+        return avgWinPoints / avgLossPoints;
+    }
+
+    public static (int MaxConsecutiveWins, int MaxConsecutiveLosses) CalculateMaxConsecutiveWinsLosses(
+        List<BacktestTrade> trades)
+    {
+        if (trades.Count == 0) return (0, 0);
+
+        int maxWins = 0, maxLosses = 0;
+        int currentWins = 0, currentLosses = 0;
+
+        foreach (var trade in trades)
+        {
+            var netPnL = trade.PnLDollars - trade.Commission;
+            if (netPnL > 0)
+            {
+                currentWins++;
+                currentLosses = 0;
+                if (currentWins > maxWins) maxWins = currentWins;
+            }
+            else if (netPnL < 0)
+            {
+                currentLosses++;
+                currentWins = 0;
+                if (currentLosses > maxLosses) maxLosses = currentLosses;
+            }
+            else
+            {
+                currentWins = 0;
+                currentLosses = 0;
+            }
+        }
+
+        return (maxWins, maxLosses);
+    }
+
+    public static (decimal AvgMinutes, decimal MaxMinutes) CalculateHoldTimes(List<BacktestTrade> trades)
+    {
+        if (trades.Count == 0) return (0m, 0m);
+
+        var holdMinutes = trades.Select(t => (decimal)t.HoldTime.TotalMinutes).ToList();
+        return (holdMinutes.Average(), holdMinutes.Max());
+    }
+
+    public static decimal CalculateUlcerIndex(List<EquityPoint> equityCurve)
+    {
+        if (equityCurve.Count < 2) return 0m;
+
+        var peak = equityCurve[0].Equity;
+        var sumSquaredDD = 0.0;
+
+        foreach (var point in equityCurve)
+        {
+            if (point.Equity > peak) peak = point.Equity;
+            var ddPct = peak > 0 ? (double)(peak - point.Equity) / (double)peak * 100.0 : 0.0;
+            sumSquaredDD += ddPct * ddPct;
+        }
+
+        return (decimal)Math.Sqrt(sumSquaredDD / equityCurve.Count);
+    }
+
+    public static decimal CalculateTailRatio(List<BacktestTrade> trades)
+    {
+        if (trades.Count < 20) return 0m;
+
+        var netPnLs = trades.Select(t => t.PnLDollars - t.Commission).OrderBy(x => x).ToList();
+        var p5Index = (int)(netPnLs.Count * 0.05);
+        var p95Index = (int)(netPnLs.Count * 0.95);
+        if (p95Index >= netPnLs.Count) p95Index = netPnLs.Count - 1;
+
+        var p5 = netPnLs[p5Index];
+        var p95 = netPnLs[p95Index];
+
+        if (p5 >= 0) return 999.99m;
+        return p95 / Math.Abs(p5);
+    }
+
+    public static decimal CalculateMfeEfficiency(List<BacktestTrade> trades)
+    {
+        var tradesWithMfe = trades.Where(t => t.MFE > 0).ToList();
+        if (tradesWithMfe.Count == 0) return 0m;
+
+        var efficiencies = tradesWithMfe.Select(t => t.PnLPoints / t.MFE).ToList();
+        return efficiencies.Average();
+    }
+
+    public static decimal CalculateMaeRatio(List<BacktestTrade> trades)
+    {
+        var tradesWithStop = trades.Where(t => t.InitialStopDistance > 0).ToList();
+        if (tradesWithStop.Count == 0) return 0m;
+
+        var ratios = tradesWithStop.Select(t => t.MAE / t.InitialStopDistance).ToList();
+        return ratios.Average();
     }
 }

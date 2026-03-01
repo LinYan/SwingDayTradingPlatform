@@ -5,7 +5,7 @@ namespace SwingDayTradingPlatform.Backtesting;
 public static class MultiStrategyBacktester
 {
     private static readonly string[] StrategyNames =
-        ["EmaPullback", "EmaPullbackBarBreak", "SecondLeg", "BrooksPA"];
+        ["EmaPullback", "BrooksPA", "SlopeInflection"];
 
     public static Dictionary<string, BacktestResult> RunAllStrategies(
         List<MarketBar> bars,

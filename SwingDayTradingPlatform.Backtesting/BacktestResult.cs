@@ -34,6 +34,20 @@ public sealed class BacktestResult
     public decimal ExpectancyR { get; init; }
     public decimal MaxDrawdownR { get; init; }
     public List<RDistributionBucket> RDistribution { get; init; } = [];
+
+    // Advanced metrics
+    public decimal CalmarRatio { get; init; }
+    public decimal RecoveryFactor { get; init; }
+    public decimal CAGR { get; init; }
+    public decimal PayoffRatio { get; init; }
+    public int MaxConsecutiveWins { get; init; }
+    public int MaxConsecutiveLosses { get; init; }
+    public decimal AvgHoldTimeMinutes { get; init; }
+    public decimal MaxHoldTimeMinutes { get; init; }
+    public decimal UlcerIndex { get; init; }
+    public decimal TailRatio { get; init; }
+    public decimal MfeEfficiency { get; init; }
+    public decimal MaeRatio { get; init; }
 }
 
 public sealed record EquityPoint(

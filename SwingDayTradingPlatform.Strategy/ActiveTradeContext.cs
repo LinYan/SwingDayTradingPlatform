@@ -24,4 +24,7 @@ public sealed class ActiveTradeContext
 
     // Per-trade bar-break exit (used by strategies that require bar-break exit)
     public bool UseBarBreakExit { get; init; }
+
+    // Per-trade slope inflection exit (bar-by-bar trailing stop using prevBar.Open)
+    public bool UseSlopeInflectionExit { get; init; }
 }

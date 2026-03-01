@@ -263,9 +263,8 @@ public sealed class BacktestEngine
                 SlowEmaPeriod = config.SlowEmaPeriod,
                 AtrPeriod = config.AtrPeriod,
                 EnableStrategy1 = _strategyFilter == "EmaPullback",
-                EnableStrategy5 = _strategyFilter == "EmaPullbackBarBreak",
-                EnableStrategy7 = _strategyFilter == "SecondLeg",
                 EnableStrategy9 = _strategyFilter == "BrooksPA",
+                EnableStrategy12 = _strategyFilter == "SlopeInflection",
                 EnableHourlyBias = config.EnableHourlyBias,
                 HourlyRangeLookback = config.HourlyRangeLookback,
                 RangeTopPct = config.RangeTopPct,
@@ -288,15 +287,6 @@ public sealed class BacktestEngine
                 EmaRsiShortMin = config.EmaRsiShortMin,
                 EmaRsiShortMax = config.EmaRsiShortMax,
                 EmaStopAtrBuffer = config.EmaStopAtrBuffer,
-                SL_FirstLegMaxBars = config.SL_FirstLegMaxBars,
-                SL_MinFirstLegAtr = config.SL_MinFirstLegAtr,
-                SL_AnchorToleranceAtr = config.SL_AnchorToleranceAtr,
-                SL_MinPullbackRetrace = config.SL_MinPullbackRetrace,
-                SL_MaxPullbackRetrace = config.SL_MaxPullbackRetrace,
-                SL_EnableFakeBreakout = config.SL_EnableFakeBreakout,
-                SL_EntryBodyMinAtr = config.SL_EntryBodyMinAtr,
-                SL_StopAtrBuffer = config.SL_StopAtrBuffer,
-                SL_RewardRatio = config.SL_RewardRatio,
                 BrooksPA_SignalBarBodyRatio = config.BrooksPA_SignalBarBodyRatio,
                 BrooksPA_MinBarRangeAtr = config.BrooksPA_MinBarRangeAtr,
                 BrooksPA_PullbackLookback = config.BrooksPA_PullbackLookback,
@@ -313,7 +303,14 @@ public sealed class BacktestEngine
                 LateCutoffMinute = config.LateCutoffMinute,
                 MaxDailyTrades = config.MaxDailyTrades,
                 EnableBreakEvenStop = config.EnableBreakEvenStop,
-                BreakEvenActivationR = config.BreakEvenActivationR
+                BreakEvenActivationR = config.BreakEvenActivationR,
+                SI_SmoothingPeriod = config.SI_SmoothingPeriod,
+                SI_FlatCrossWindow = config.SI_FlatCrossWindow,
+                SI_SlopeEpsTicks = config.SI_SlopeEpsTicks,
+                SI_StrongTrendLookback = config.SI_StrongTrendLookback,
+                SI_StrongTrendPct = config.SI_StrongTrendPct,
+                SI_CooldownBars = config.SI_CooldownBars,
+                SI_UseTightStop = config.SI_UseTightStop
             };
         }
 
@@ -373,8 +370,7 @@ public sealed class BacktestEngine
             if (bracketEnd > 1)
             {
                 var name = reason[1..bracketEnd];
-                if (name == "EmaPullback" || name == "EmaPullbackBarBreak" ||
-                    name == "SecondLeg" || name == "BrooksPA")
+                if (name is "EmaPullback" or "BrooksPA" or "SlopeInflection")
                     return name;
             }
         }

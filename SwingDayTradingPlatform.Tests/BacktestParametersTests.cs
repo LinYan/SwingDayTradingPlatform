@@ -61,6 +61,16 @@ public class BacktestParametersTests
         Assert.Equal(1.5m, multi.EmaPullbackRewardRatio);
         Assert.Equal(0.5m, multi.EmaPullbackTolerance);
         Assert.Equal(20m, multi.MaxStopPoints);
+
+        // SlopeInflection defaults should map through
+        Assert.False(multi.EnableStrategy12);
+        Assert.Equal(9, multi.SI_SmoothingPeriod);
+        Assert.Equal(6, multi.SI_FlatCrossWindow);
+        Assert.Equal(1.0m, multi.SI_SlopeEpsTicks);
+        Assert.Equal(12, multi.SI_StrongTrendLookback);
+        Assert.Equal(0.75m, multi.SI_StrongTrendPct);
+        Assert.Equal(6, multi.SI_CooldownBars);
+        Assert.True(multi.SI_UseTightStop);
     }
 
     [Fact]
@@ -110,8 +120,6 @@ public class BacktestParametersTests
         Assert.Equal(50, p.SlowEmaPeriod);
         Assert.Equal(14, p.AtrPeriod);
         Assert.True(p.EnableStrategy1);
-        Assert.True(p.EnableStrategy5);
-        Assert.True(p.EnableStrategy7);
         Assert.True(p.EnableStrategy9);
         Assert.Equal(0.25m, p.TickSize);
         Assert.Equal(10m, p.MaxStopPoints);
@@ -124,5 +132,15 @@ public class BacktestParametersTests
         Assert.True(p.EnableBreakEvenStop);
         Assert.Equal(1.2m, p.BreakEvenActivationR);
         Assert.Equal(6, p.MaxDailyTrades);
+
+        // SlopeInflection defaults
+        Assert.False(p.EnableStrategy12);
+        Assert.Equal(9, p.SI_SmoothingPeriod);
+        Assert.Equal(6, p.SI_FlatCrossWindow);
+        Assert.Equal(1.0m, p.SI_SlopeEpsTicks);
+        Assert.Equal(12, p.SI_StrongTrendLookback);
+        Assert.Equal(0.75m, p.SI_StrongTrendPct);
+        Assert.Equal(6, p.SI_CooldownBars);
+        Assert.True(p.SI_UseTightStop);
     }
 }

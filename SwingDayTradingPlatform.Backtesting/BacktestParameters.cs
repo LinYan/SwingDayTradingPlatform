@@ -17,8 +17,6 @@ public sealed class BacktestParameters
 
     // Multi-strategy config fields
     public bool EnableStrategy1 { get; init; } = true;
-    public bool EnableStrategy5 { get; init; } = true;
-    public bool EnableStrategy7 { get; init; } = true;
     public bool EnableStrategy9 { get; init; } = true;
     public bool EnableHourlyBias { get; init; } = true;
     public int HourlyRangeLookback { get; init; } = 10;
@@ -50,17 +48,6 @@ public sealed class BacktestParameters
     public decimal EmaRsiShortMax { get; init; } = 55m;
     public decimal EmaStopAtrBuffer { get; init; } = 0.25m;
 
-    // SecondLeg
-    public int SL_FirstLegMaxBars { get; init; } = 15;
-    public decimal SL_MinFirstLegAtr { get; init; } = 2.0m;
-    public decimal SL_AnchorToleranceAtr { get; init; } = 0.5m;
-    public decimal SL_MinPullbackRetrace { get; init; } = 0.33m;
-    public decimal SL_MaxPullbackRetrace { get; init; } = 0.62m;
-    public bool SL_EnableFakeBreakout { get; init; } = true;
-    public decimal SL_EntryBodyMinAtr { get; init; } = 0.25m;
-    public decimal SL_StopAtrBuffer { get; init; } = 0.3m;
-    public decimal SL_RewardRatio { get; init; } = 2.0m;
-
     // BrooksPA
     public decimal BrooksPA_SignalBarBodyRatio { get; init; } = 0.5m;
     public decimal BrooksPA_MinBarRangeAtr { get; init; } = 0.3m;
@@ -87,6 +74,16 @@ public sealed class BacktestParameters
     // Break-even stop
     public bool EnableBreakEvenStop { get; init; } = true;
     public decimal BreakEvenActivationR { get; init; } = 1.2m;
+
+    // SlopeInflection (Strategy 12)
+    public bool EnableStrategy12 { get; init; } = false;
+    public int SI_SmoothingPeriod { get; init; } = 9;
+    public int SI_FlatCrossWindow { get; init; } = 6;
+    public decimal SI_SlopeEpsTicks { get; init; } = 1.0m;
+    public int SI_StrongTrendLookback { get; init; } = 12;
+    public decimal SI_StrongTrendPct { get; init; } = 0.75m;
+    public int SI_CooldownBars { get; init; } = 6;
+    public bool SI_UseTightStop { get; init; } = true;
 
     public StrategyConfig ToStrategyConfig() => new()
     {
@@ -122,8 +119,6 @@ public sealed class BacktestParameters
         SlowEmaPeriod = SlowEmaPeriod,
         AtrPeriod = AtrPeriod,
         EnableStrategy1 = EnableStrategy1,
-        EnableStrategy5 = EnableStrategy5,
-        EnableStrategy7 = EnableStrategy7,
         EnableStrategy9 = EnableStrategy9,
         EnableHourlyBias = EnableHourlyBias,
         HourlyRangeLookback = HourlyRangeLookback,
@@ -148,15 +143,6 @@ public sealed class BacktestParameters
         EmaRsiShortMin = EmaRsiShortMin,
         EmaRsiShortMax = EmaRsiShortMax,
         EmaStopAtrBuffer = EmaStopAtrBuffer,
-        SL_FirstLegMaxBars = SL_FirstLegMaxBars,
-        SL_MinFirstLegAtr = SL_MinFirstLegAtr,
-        SL_AnchorToleranceAtr = SL_AnchorToleranceAtr,
-        SL_MinPullbackRetrace = SL_MinPullbackRetrace,
-        SL_MaxPullbackRetrace = SL_MaxPullbackRetrace,
-        SL_EnableFakeBreakout = SL_EnableFakeBreakout,
-        SL_EntryBodyMinAtr = SL_EntryBodyMinAtr,
-        SL_StopAtrBuffer = SL_StopAtrBuffer,
-        SL_RewardRatio = SL_RewardRatio,
         BrooksPA_SignalBarBodyRatio = BrooksPA_SignalBarBodyRatio,
         BrooksPA_MinBarRangeAtr = BrooksPA_MinBarRangeAtr,
         BrooksPA_PullbackLookback = BrooksPA_PullbackLookback,
@@ -173,7 +159,15 @@ public sealed class BacktestParameters
         LateCutoffMinute = LateCutoffMinute,
         MaxDailyTrades = MaxDailyTrades,
         EnableBreakEvenStop = EnableBreakEvenStop,
-        BreakEvenActivationR = BreakEvenActivationR
+        BreakEvenActivationR = BreakEvenActivationR,
+        EnableStrategy12 = EnableStrategy12,
+        SI_SmoothingPeriod = SI_SmoothingPeriod,
+        SI_FlatCrossWindow = SI_FlatCrossWindow,
+        SI_SlopeEpsTicks = SI_SlopeEpsTicks,
+        SI_StrongTrendLookback = SI_StrongTrendLookback,
+        SI_StrongTrendPct = SI_StrongTrendPct,
+        SI_CooldownBars = SI_CooldownBars,
+        SI_UseTightStop = SI_UseTightStop
     };
 
     public string Label => $"F{FastEmaPeriod}/S{SlowEmaPeriod} ATR{AtrPeriod}x{AtrMultiplier} RR{RewardRiskRatio}";

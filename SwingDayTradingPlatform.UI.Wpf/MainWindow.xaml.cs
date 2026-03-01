@@ -36,9 +36,8 @@ public partial class MainWindow : Window
     }
 
     private void OnCalendarDateSelected1(object sender, RoutedEventArgs e) => OpenDayDetail(sender, "EmaPullback", "EMA Pullback");
-    private void OnCalendarDateSelected5(object sender, RoutedEventArgs e) => OpenDayDetail(sender, "EmaPullbackBarBreak", "EMA Bar Break");
-    private void OnCalendarDateSelected7(object sender, RoutedEventArgs e) => OpenDayDetail(sender, "SecondLeg", "Second Leg");
     private void OnCalendarDateSelected9(object sender, RoutedEventArgs e) => OpenDayDetail(sender, "BrooksPA", "Brooks PA");
+    private void OnCalendarDateSelected12(object sender, RoutedEventArgs e) => OpenDayDetail(sender, "SlopeInflection", "Slope Inflection");
 
     private void OpenDayDetail(object sender, string strategyKey, string displayName)
     {

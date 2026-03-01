@@ -7,8 +7,6 @@ public sealed class MultiStrategyConfig
     public int AtrPeriod { get; init; } = 14;
 
     public bool EnableStrategy1 { get; init; } = true;
-    public bool EnableStrategy5 { get; init; } = true;
-    public bool EnableStrategy7 { get; init; } = true;
     public bool EnableStrategy9 { get; init; } = true;
 
     public bool EnableHourlyBias { get; init; } = true;
@@ -42,17 +40,6 @@ public sealed class MultiStrategyConfig
     public decimal EmaRsiShortMax { get; init; } = 55m;
     public decimal EmaStopAtrBuffer { get; init; } = 0.25m;
 
-    // SecondLeg
-    public int SL_FirstLegMaxBars { get; init; } = 15;
-    public decimal SL_MinFirstLegAtr { get; init; } = 2.0m;
-    public decimal SL_AnchorToleranceAtr { get; init; } = 0.5m;
-    public decimal SL_MinPullbackRetrace { get; init; } = 0.33m;
-    public decimal SL_MaxPullbackRetrace { get; init; } = 0.62m;
-    public bool SL_EnableFakeBreakout { get; init; } = true;
-    public decimal SL_EntryBodyMinAtr { get; init; } = 0.25m;
-    public decimal SL_StopAtrBuffer { get; init; } = 0.3m;
-    public decimal SL_RewardRatio { get; init; } = 2.0m;
-
     // BrooksPA
     public decimal BrooksPA_SignalBarBodyRatio { get; init; } = 0.5m;
     public decimal BrooksPA_MinBarRangeAtr { get; init; } = 0.3m;
@@ -77,4 +64,14 @@ public sealed class MultiStrategyConfig
     // Break-even stop
     public bool EnableBreakEvenStop { get; init; } = true;
     public decimal BreakEvenActivationR { get; init; } = 1.2m;
+
+    // SlopeInflection (Strategy 12)
+    public bool EnableStrategy12 { get; init; } = false;
+    public int SI_SmoothingPeriod { get; init; } = 9;
+    public int SI_FlatCrossWindow { get; init; } = 6;
+    public decimal SI_SlopeEpsTicks { get; init; } = 1.0m;
+    public int SI_StrongTrendLookback { get; init; } = 12;
+    public decimal SI_StrongTrendPct { get; init; } = 0.75m;
+    public int SI_CooldownBars { get; init; } = 6;
+    public bool SI_UseTightStop { get; init; } = true;
 }

@@ -96,8 +96,67 @@ public sealed class MultiStrategyEngine
                 }
             }
 
-            // ATR trailing stop (activates after N bars)
-            if (_activeTrade.BarsSinceEntry >= _config.TrailingStopActivationBars && _context.Atr14 > 0)
+            // SlopeInflection bar-by-bar trailing stop (prevBar.Open)
+            // Skip bar 1: prevBar is the entry bar itself, which can cause instant exits
+            if (_activeTrade.UseSlopeInflectionExit && _activeTrade.BarsSinceEntry >= 2)
+            {
+                if (_activeTrade.Direction == PositionSide.Long)
+                {
+                    var newTrail = prevBar.Open;
+                    if (newTrail > _activeTrade.TrailingStopLevel)
+                        _activeTrade.TrailingStopLevel = newTrail;
+
+                    if (bar.Low <= _activeTrade.TrailingStopLevel)
+                    {
+                        LatestSignalText = "Flatten (SI trailing)";
+                        LatestReason = $"[{_activeTrade.OwningStrategyName}] Bar-by-bar trailing stop at {_activeTrade.TrailingStopLevel:F2}";
+                        _activeTrade.PreviousBar = bar;
+
+                        var flattenSignal = new StrategySignal(
+                            $"SITRAIL-{bar.CloseTimeUtc:yyyyMMddHHmmss}",
+                            bar.CloseTimeUtc,
+                            PositionSide.Short,
+                            _activeTrade.TrailingStopLevel,
+                            _activeTrade.TrailingStopLevel,
+                            null,
+                            LatestReason,
+                            IsFlattenSignal: true);
+
+                        _activeTrade = null;
+                        return flattenSignal;
+                    }
+                }
+                else // Short
+                {
+                    var newTrail = prevBar.Open;
+                    if (newTrail < _activeTrade.TrailingStopLevel)
+                        _activeTrade.TrailingStopLevel = newTrail;
+
+                    if (bar.High >= _activeTrade.TrailingStopLevel)
+                    {
+                        LatestSignalText = "Flatten (SI trailing)";
+                        LatestReason = $"[{_activeTrade.OwningStrategyName}] Bar-by-bar trailing stop at {_activeTrade.TrailingStopLevel:F2}";
+                        _activeTrade.PreviousBar = bar;
+
+                        var flattenSignal = new StrategySignal(
+                            $"SITRAIL-{bar.CloseTimeUtc:yyyyMMddHHmmss}",
+                            bar.CloseTimeUtc,
+                            PositionSide.Long,
+                            _activeTrade.TrailingStopLevel,
+                            _activeTrade.TrailingStopLevel,
+                            null,
+                            LatestReason,
+                            IsFlattenSignal: true);
+
+                        _activeTrade = null;
+                        return flattenSignal;
+                    }
+                }
+            }
+
+            // ATR trailing stop (activates after N bars) — skip for SlopeInflection trades
+            if (!_activeTrade.UseSlopeInflectionExit
+                && _activeTrade.BarsSinceEntry >= _config.TrailingStopActivationBars && _context.Atr14 > 0)
             {
                 var atrTrail = _context.Atr14 * _config.TrailingStopAtrMultiplier;
 
@@ -260,32 +319,29 @@ public sealed class MultiStrategyEngine
             }
         }
 
-        // Daily trade limit
-        if (_dailyTradeCount >= _config.MaxDailyTrades)
-        {
-            LatestReason = $"Daily trade limit reached ({_config.MaxDailyTrades})";
-            return null;
-        }
+        // Daily trade limit — gate strategies 1-9 but not Strategy 12
+        var dailyLimitReached = _dailyTradeCount >= _config.MaxDailyTrades;
 
-        // Iterate strategies by priority, first match wins
         StrategySignal? signal = null;
 
-        if (_config.EnableStrategy1)
-            signal = EmaPullbackStrategy.Evaluate(_bars, _context, _config, idx);
+        if (!dailyLimitReached)
+        {
+            // Iterate strategies by priority, first match wins
+            if (_config.EnableStrategy1)
+                signal = EmaPullbackStrategy.Evaluate(_bars, _context, _config, idx);
 
-        if (signal is null && _config.EnableStrategy5)
-            signal = EmaPullbackBarBreakStrategy.Evaluate(_bars, _context, _config, idx);
+            if (signal is null && _config.EnableStrategy9)
+                signal = BrooksPriceActionStrategy.Evaluate(_bars, _context, _config, idx);
+        }
 
-        if (signal is null && _config.EnableStrategy7)
-            signal = SecondLegStrategy.Evaluate(_bars, _context, _config, idx);
-
-        if (signal is null && _config.EnableStrategy9)
-            signal = BrooksPriceActionStrategy.Evaluate(_bars, _context, _config, idx);
+        // Strategy 12 bypasses daily trade limit
+        if (signal is null && _config.EnableStrategy12)
+            signal = SlopeInflectionStrategy.Evaluate(_bars, _context, _config, idx);
 
         if (signal is null)
         {
             LatestSignalText = "None";
-            LatestReason = "No pattern match";
+            LatestReason = dailyLimitReached ? $"Daily trade limit reached ({_config.MaxDailyTrades})" : "No pattern match";
             return null;
         }
 
@@ -316,7 +372,8 @@ public sealed class MultiStrategyEngine
             BarsSinceEntry = 0,
             TrailingStopLevel = signal.StopPrice,
             RiskAmount = Math.Abs(signal.EntryPrice - signal.StopPrice),
-            UseBarBreakExit = strategyName == EmaPullbackBarBreakStrategy.Name
+            UseBarBreakExit = false,
+            UseSlopeInflectionExit = strategyName == SlopeInflectionStrategy.Name
         };
 
         _dailyTradeCount++;

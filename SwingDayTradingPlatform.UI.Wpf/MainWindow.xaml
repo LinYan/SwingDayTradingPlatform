@@ -796,9 +796,8 @@
                                 <TextBlock Text="Strategy Toggles" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8"/>
                                 <WrapPanel Margin="0,0,0,6">
                                     <CheckBox Content="EMA Pullback" IsChecked="{Binding Backtest.EnableStrategy1}" Margin="0,0,20,0"/>
-                                    <CheckBox Content="EMA Bar Break" IsChecked="{Binding Backtest.EnableStrategy5}" Margin="0,0,20,0"/>
-                                    <CheckBox Content="Second Leg" IsChecked="{Binding Backtest.EnableStrategy7}" Margin="0,0,20,0"/>
                                     <CheckBox Content="Brooks PA" IsChecked="{Binding Backtest.EnableStrategy9}" Margin="0,0,20,0"/>
+                                    <CheckBox Content="Slope Inflection" IsChecked="{Binding Backtest.EnableStrategy12}" Margin="0,0,20,0"/>
                                     <CheckBox Content="Hourly Bias" IsChecked="{Binding Backtest.EnableHourlyBias}"/>
                                 </WrapPanel>
 
@@ -948,7 +947,7 @@
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="Black"/>
                         </Border.Effect>
-                        <TabControl SelectedIndex="{Binding Backtest.SelectedTabIndex}" MinHeight="900" Padding="0">
+                        <TabControl SelectedIndex="{Binding Backtest.SelectedTabIndex}" MinHeight="1100" Padding="0">
 
                             <!-- Tab: All Trades -->
                             <TabItem Header="All Trades">
@@ -1002,6 +1001,7 @@
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
                                     <UniformGrid Columns="6" Margin="0,0,0,8">
@@ -1015,66 +1015,13 @@
                                     <Border Grid.Row="1" Background="#1E1E2E" CornerRadius="10" Height="220" Margin="0,0,0,8">
                                         <controls:EquityCurveCanvas EquityCurve="{Binding Backtest.EquityCurve1}" Margin="4"/>
                                     </Border>
-                                    <Border Grid.Row="2" CornerRadius="10" ClipToBounds="True">
+                                    <Border Grid.Row="2" Background="#1E1E2E" CornerRadius="10" Height="200" Margin="0,0,0,8">
+                                        <controls:DailyPnLBarChart DailySummaries="{Binding Backtest.CalendarSummaries1}" Margin="4"/>
+                                    </Border>
+                                    <Border Grid.Row="3" CornerRadius="10" ClipToBounds="True">
                                         <controls:PnLCalendarCanvas x:Name="Calendar1"
                                             DailySummaries="{Binding Backtest.CalendarSummaries1}"
                                             DateSelected="OnCalendarDateSelected1"
-                                            ToolTip="Click a date to open day detail"/>
-                                    </Border>
-                                </Grid>
-                            </TabItem>
-
-                            <!-- Tab: EMA Bar Break -->
-                            <TabItem Header="EMA Bar Break">
-                                <Grid Margin="12">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <UniformGrid Columns="6" Margin="0,0,0,8">
-                                        <Border Style="{StaticResource StatCard}" Margin="0,0,5,0"><Grid><Border Background="{StaticResource AccentGreenBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="NET P&amp;L" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsNetPnL5}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="WIN RATE" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsWinRate5}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="SHARPE" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsSharpe5}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentRedBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="MAX DD" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsMaxDD5}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentAmberBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="PROFIT FACTOR" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsPF5}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="5,0,0,0"><Grid><Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="TRADES" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsTrades5}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                    </UniformGrid>
-                                    <Border Grid.Row="1" Background="#1E1E2E" CornerRadius="10" Height="220" Margin="0,0,0,8">
-                                        <controls:EquityCurveCanvas EquityCurve="{Binding Backtest.EquityCurve5}" Margin="4"/>
-                                    </Border>
-                                    <Border Grid.Row="2" CornerRadius="10" ClipToBounds="True">
-                                        <controls:PnLCalendarCanvas x:Name="Calendar5"
-                                            DailySummaries="{Binding Backtest.CalendarSummaries5}"
-                                            DateSelected="OnCalendarDateSelected5"
-                                            ToolTip="Click a date to open day detail"/>
-                                    </Border>
-                                </Grid>
-                            </TabItem>
-
-                            <!-- Tab: Second Leg -->
-                            <TabItem Header="Second Leg">
-                                <Grid Margin="12">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    <UniformGrid Columns="6" Margin="0,0,0,8">
-                                        <Border Style="{StaticResource StatCard}" Margin="0,0,5,0"><Grid><Border Background="{StaticResource AccentGreenBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="NET P&amp;L" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsNetPnL7}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="WIN RATE" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsWinRate7}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="SHARPE" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsSharpe7}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentRedBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="MAX DD" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsMaxDD7}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentAmberBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="PROFIT FACTOR" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsPF7}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                        <Border Style="{StaticResource StatCard}" Margin="5,0,0,0"><Grid><Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="TRADES" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsTrades7}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
-                                    </UniformGrid>
-                                    <Border Grid.Row="1" Background="#1E1E2E" CornerRadius="10" Height="220" Margin="0,0,0,8">
-                                        <controls:EquityCurveCanvas EquityCurve="{Binding Backtest.EquityCurve7}" Margin="4"/>
-                                    </Border>
-                                    <Border Grid.Row="2" CornerRadius="10" ClipToBounds="True">
-                                        <controls:PnLCalendarCanvas x:Name="Calendar7"
-                                            DailySummaries="{Binding Backtest.CalendarSummaries7}"
-                                            DateSelected="OnCalendarDateSelected7"
                                             ToolTip="Click a date to open day detail"/>
                                     </Border>
                                 </Grid>
@@ -1084,6 +1031,7 @@
                             <TabItem Header="Brooks PA">
                                 <Grid Margin="12">
                                     <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
@@ -1099,10 +1047,45 @@
                                     <Border Grid.Row="1" Background="#1E1E2E" CornerRadius="10" Height="220" Margin="0,0,0,8">
                                         <controls:EquityCurveCanvas EquityCurve="{Binding Backtest.EquityCurve9}" Margin="4"/>
                                     </Border>
-                                    <Border Grid.Row="2" CornerRadius="10" ClipToBounds="True">
+                                    <Border Grid.Row="2" Background="#1E1E2E" CornerRadius="10" Height="200" Margin="0,0,0,8">
+                                        <controls:DailyPnLBarChart DailySummaries="{Binding Backtest.CalendarSummaries9}" Margin="4"/>
+                                    </Border>
+                                    <Border Grid.Row="3" CornerRadius="10" ClipToBounds="True">
                                         <controls:PnLCalendarCanvas x:Name="Calendar9"
                                             DailySummaries="{Binding Backtest.CalendarSummaries9}"
                                             DateSelected="OnCalendarDateSelected9"
+                                            ToolTip="Click a date to open day detail"/>
+                                    </Border>
+                                </Grid>
+                            </TabItem>
+
+                            <!-- Tab: Slope Inflection -->
+                            <TabItem Header="Slope Inflection">
+                                <Grid Margin="12">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <UniformGrid Columns="6" Margin="0,0,0,8">
+                                        <Border Style="{StaticResource StatCard}" Margin="0,0,5,0"><Grid><Border Background="{StaticResource AccentGreenBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="NET P&amp;L" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsNetPnL12}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
+                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="WIN RATE" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsWinRate12}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
+                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="SHARPE" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsSharpe12}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
+                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentRedBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="MAX DD" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsMaxDD12}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
+                                        <Border Style="{StaticResource StatCard}" Margin="3,0"><Grid><Border Background="{StaticResource AccentAmberBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="PROFIT FACTOR" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsPF12}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
+                                        <Border Style="{StaticResource StatCard}" Margin="5,0,0,0"><Grid><Border Background="{StaticResource AccentBlueBrush}" Width="4" HorizontalAlignment="Left" CornerRadius="2" Margin="-14,-12,0,-12"/><StackPanel Margin="2,0,0,0"><TextBlock Text="TRADES" FontSize="10" FontWeight="SemiBold" Foreground="#94A3B8"/><TextBlock Text="{Binding Backtest.StatsTrades12}" FontSize="20" FontWeight="Bold" FontFamily="Consolas" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel></Grid></Border>
+                                    </UniformGrid>
+                                    <Border Grid.Row="1" Background="#1E1E2E" CornerRadius="10" Height="220" Margin="0,0,0,8">
+                                        <controls:EquityCurveCanvas EquityCurve="{Binding Backtest.EquityCurve12}" Margin="4"/>
+                                    </Border>
+                                    <Border Grid.Row="2" Background="#1E1E2E" CornerRadius="10" Height="200" Margin="0,0,0,8">
+                                        <controls:DailyPnLBarChart DailySummaries="{Binding Backtest.CalendarSummaries12}" Margin="4"/>
+                                    </Border>
+                                    <Border Grid.Row="3" CornerRadius="10" ClipToBounds="True">
+                                        <controls:PnLCalendarCanvas x:Name="Calendar12"
+                                            DailySummaries="{Binding Backtest.CalendarSummaries12}"
+                                            DateSelected="OnCalendarDateSelected12"
                                             ToolTip="Click a date to open day detail"/>
                                     </Border>
                                 </Grid>

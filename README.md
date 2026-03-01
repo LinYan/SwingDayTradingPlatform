@@ -29,7 +29,7 @@ SwingDayTradingPlatform.slnx
 
 ## Trading strategies
 
-All four strategies run on 5-minute bars. They are evaluated in priority order on each bar close; first match wins.
+All three strategies run on 5-minute bars. They are evaluated in priority order on each bar close; first match wins.
 
 ### Strategy 1: EMA Pullback
 
@@ -40,22 +40,6 @@ Trend-following pullback entry after swing confirmation.
 - Filters: EMA slope, RSI range, body size (ATR-based)
 - **Exit:** ATR trailing stop + configurable R:R target (default 2.0x)
 
-### Strategy 5: EMA Pullback Bar Break
-
-Same entry logic as EMA Pullback but with bar-break exit management.
-
-- Entry conditions match EMA Pullback (trend, VWAP, swing pattern, slope/RSI filters)
-- **Exit:** Break of previous bar's low (long) or high (short) instead of fixed R:R target
-
-### Strategy 7: Second Leg
-
-Captures the second impulse leg after a pullback to the mean.
-
-- Requires a first-leg impulse move (>= Nx ATR)
-- Enters on 25-75% retracement back to EMA20/VWAP with bullish/bearish confirmation bar
-- Optional fake-breakout detection for higher-probability entries
-- **Exit:** R:R target (default 2.0x), stop at pullback extreme + ATR buffer
-
 ### Strategy 9: Brooks Price Action
 
 Al Brooks-style price action patterns in the trend direction.
@@ -64,6 +48,15 @@ Al Brooks-style price action patterns in the trend direction.
 - **ii Breakout:** Two consecutive inside bars forming compression, breakout in trend direction
 - **H2/L2 Pullback:** Two-legged pullback near EMA20 with signal bar closing in trend direction
 - **Exit:** Measured-move target or R:R target (whichever is more conservative), stop one tick beyond signal bar
+
+### Strategy 12: Slope Inflection
+
+Detects EMA slope inflection points (trend turns) to capture large trend moves.
+
+- **Long:** EMA slope crosses from negative/flat to positive
+- **Short:** EMA slope crosses from positive/flat to negative
+- Configurable smoothing period, slope epsilon, and cooldown bars
+- **Exit:** Bar-by-bar trailing stop using previous bar's open (no fixed target — designed to ride extended moves)
 
 ### Shared exit mechanisms
 
@@ -82,6 +75,16 @@ Optional filter restricts entries based on 1-hour range percentile:
 - Top 75% of range = short-only
 - Bottom 25% of range = long-only
 - Middle = both directions allowed
+
+## UI Dashboard
+
+The WPF desktop dashboard includes per-strategy tabs with:
+
+- **Stat cards** — Net P&L, win rate, Sharpe, max drawdown, profit factor, trade count
+- **Equity curve** — Bezier-smoothed line with drawdown shading, high watermark, and crosshair tooltip
+- **Daily P&L bar chart** — Green/red vertical bars for every trading day across the full backtest period, with hover tooltips and summary overlay (total P&L, win rate, trading days)
+- **P&L calendar** — Month-by-month calendar heatmap with per-day detail, color intensity by magnitude, and click-to-drill-down
+- **Monthly returns table** — Tabular P&L and return % by month
 
 ## Backtesting
 
@@ -150,7 +153,7 @@ dotnet test
 
 The test suite covers:
 
-- Strategy evaluation (EMA Pullback, EMA Bar Break, Second Leg, Brooks PA)
+- Strategy evaluation (EMA Pullback, Brooks PA, Slope Inflection)
 - Backtest engine lifecycle and metrics
 - Pattern detection (swings, S/R clustering, reversal candles, bar-break/reversal exits)
 - Indicators (EMA, ATR, VWAP)

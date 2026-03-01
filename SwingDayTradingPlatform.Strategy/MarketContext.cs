@@ -43,6 +43,7 @@ public sealed class MarketContext
     public List<SwingPoint> SwingPoints { get; } = [];
     public List<SRLevel> SRLevels { get; } = [];
     public BigMoveInfo? LatestBigMove { get; private set; }
+    public int BarsSinceOpen { get; private set; }
 
     public void OnNewBar(IReadOnlyList<MarketBar> bars, DateTimeOffset tradingLocalTime)
     {
@@ -94,6 +95,8 @@ public sealed class MarketContext
         _cumVolume += latestBar.Volume;
         Vwap = _cumVolume > 0 ? _cumPriceVolume / _cumVolume : latestBar.Close;
 
+        BarsSinceOpen++;
+
         // Update swing points (trim to last 50 to prevent unbounded growth)
         PatternDetector.UpdateSwingPoints(bars, SwingPoints, _config.SwingLookback);
         if (SwingPoints.Count > 50)
@@ -126,6 +129,7 @@ public sealed class MarketContext
         RangeHigh = 0;
         RangeLow = 0;
         RangePercentile = 50;
+        BarsSinceOpen = 0;
         // Note: EMA state is NOT reset — EMA should continue incrementally across days
         _cumPriceVolume = 0;
         _cumVolume = 0;

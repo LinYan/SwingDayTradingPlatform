@@ -163,11 +163,10 @@ public class FullBacktestIntegrationTests
 
         var allResults = MultiStrategyBacktester.RunAllStrategies(bars, parameters, config);
 
-        Assert.True(allResults.Count >= 4, $"Expected at least 4 strategies, got {allResults.Count}");
+        Assert.True(allResults.Count >= 3, $"Expected at least 3 strategies, got {allResults.Count}");
         Assert.True(allResults.ContainsKey("EmaPullback"));
-        Assert.True(allResults.ContainsKey("EmaPullbackBarBreak"));
-        Assert.True(allResults.ContainsKey("SecondLeg"));
         Assert.True(allResults.ContainsKey("BrooksPA"));
+        Assert.True(allResults.ContainsKey("SlopeInflection"));
 
         foreach (var (name, result) in allResults)
         {

@@ -49,11 +49,10 @@ public sealed class BacktestViewModel : ObservableObject
     private decimal _slippagePoints = 0m;
     private decimal _maxDailyLossPoints = 20m;
 
-    // MultiStrategy config fields (4 strategies only)
+    // MultiStrategy config fields
     private bool _enableStrategy1 = true;
-    private bool _enableStrategy5 = true;
-    private bool _enableStrategy7 = true;
     private bool _enableStrategy9 = true;
+    private bool _enableStrategy12;
     private bool _enableHourlyBias = true;
     private int _hourlyRangeLookback = 10;
     private int _rangeTopPct = 75;
@@ -93,28 +92,26 @@ public sealed class BacktestViewModel : ObservableObject
     private Dictionary<string, BacktestResult> _strategyResults = new();
     private Dictionary<string, List<DailySummary>> _strategySummaries = new();
 
-    // Calendar (4 strategies: S1, S5, S7, S9)
+    // Calendar
     private IReadOnlyList<DailySummary>? _calendarSummaries1;
-    private IReadOnlyList<DailySummary>? _calendarSummaries5;
-    private IReadOnlyList<DailySummary>? _calendarSummaries7;
     private IReadOnlyList<DailySummary>? _calendarSummaries9;
+    private IReadOnlyList<DailySummary>? _calendarSummaries12;
 
     // Strategy stat strings
     private string _stats1 = "--";
-    private string _stats5 = "--";
-    private string _stats7 = "--";
     private string _stats9 = "--";
+    private string _stats12 = "--";
 
     // Per-strategy detail stats
-    private string _statsNetPnL1 = "--", _statsNetPnL5 = "--", _statsNetPnL7 = "--", _statsNetPnL9 = "--";
-    private string _statsWinRate1 = "--", _statsWinRate5 = "--", _statsWinRate7 = "--", _statsWinRate9 = "--";
-    private string _statsSharpe1 = "--", _statsSharpe5 = "--", _statsSharpe7 = "--", _statsSharpe9 = "--";
-    private string _statsMaxDD1 = "--", _statsMaxDD5 = "--", _statsMaxDD7 = "--", _statsMaxDD9 = "--";
-    private string _statsPF1 = "--", _statsPF5 = "--", _statsPF7 = "--", _statsPF9 = "--";
-    private string _statsTrades1 = "--", _statsTrades5 = "--", _statsTrades7 = "--", _statsTrades9 = "--";
+    private string _statsNetPnL1 = "--", _statsNetPnL9 = "--", _statsNetPnL12 = "--";
+    private string _statsWinRate1 = "--", _statsWinRate9 = "--", _statsWinRate12 = "--";
+    private string _statsSharpe1 = "--", _statsSharpe9 = "--", _statsSharpe12 = "--";
+    private string _statsMaxDD1 = "--", _statsMaxDD9 = "--", _statsMaxDD12 = "--";
+    private string _statsPF1 = "--", _statsPF9 = "--", _statsPF12 = "--";
+    private string _statsTrades1 = "--", _statsTrades9 = "--", _statsTrades12 = "--";
 
     // Per-strategy equity curves
-    private IReadOnlyList<EquityPoint>? _equityCurve1, _equityCurve5, _equityCurve7, _equityCurve9;
+    private IReadOnlyList<EquityPoint>? _equityCurve1, _equityCurve9, _equityCurve12;
 
     public BacktestViewModel(AppConfig appConfig)
     {
@@ -137,8 +134,6 @@ public sealed class BacktestViewModel : ObservableObject
         SlowEma = appConfig.MultiStrategy.SlowEmaPeriod;
         AtrPeriod = appConfig.MultiStrategy.AtrPeriod;
         EnableStrategy1 = appConfig.MultiStrategy.EnableStrategy1;
-        EnableStrategy5 = appConfig.MultiStrategy.EnableStrategy5;
-        EnableStrategy7 = appConfig.MultiStrategy.EnableStrategy7;
         EnableStrategy9 = appConfig.MultiStrategy.EnableStrategy9;
         EnableHourlyBias = appConfig.MultiStrategy.EnableHourlyBias;
         HourlyRangeLookback = appConfig.MultiStrategy.HourlyRangeLookback;
@@ -206,9 +201,8 @@ public sealed class BacktestViewModel : ObservableObject
 
     // Multi-strategy config
     public bool EnableStrategy1 { get => _enableStrategy1; set => SetProperty(ref _enableStrategy1, value); }
-    public bool EnableStrategy5 { get => _enableStrategy5; set => SetProperty(ref _enableStrategy5, value); }
-    public bool EnableStrategy7 { get => _enableStrategy7; set => SetProperty(ref _enableStrategy7, value); }
     public bool EnableStrategy9 { get => _enableStrategy9; set => SetProperty(ref _enableStrategy9, value); }
+    public bool EnableStrategy12 { get => _enableStrategy12; set => SetProperty(ref _enableStrategy12, value); }
     public bool EnableHourlyBias { get => _enableHourlyBias; set => SetProperty(ref _enableHourlyBias, value); }
     public int HourlyRangeLookback { get => _hourlyRangeLookback; set => SetProperty(ref _hourlyRangeLookback, value); }
     public int RangeTopPct { get => _rangeTopPct; set => SetProperty(ref _rangeTopPct, value); }
@@ -248,52 +242,43 @@ public sealed class BacktestViewModel : ObservableObject
 
     // Calendar summaries per strategy tab
     public IReadOnlyList<DailySummary>? CalendarSummaries1 { get => _calendarSummaries1; set => SetProperty(ref _calendarSummaries1, value); }
-    public IReadOnlyList<DailySummary>? CalendarSummaries5 { get => _calendarSummaries5; set => SetProperty(ref _calendarSummaries5, value); }
-    public IReadOnlyList<DailySummary>? CalendarSummaries7 { get => _calendarSummaries7; set => SetProperty(ref _calendarSummaries7, value); }
     public IReadOnlyList<DailySummary>? CalendarSummaries9 { get => _calendarSummaries9; set => SetProperty(ref _calendarSummaries9, value); }
+    public IReadOnlyList<DailySummary>? CalendarSummaries12 { get => _calendarSummaries12; set => SetProperty(ref _calendarSummaries12, value); }
 
     // Strategy stats
     public string Stats1 { get => _stats1; set => SetProperty(ref _stats1, value); }
-    public string Stats5 { get => _stats5; set => SetProperty(ref _stats5, value); }
-    public string Stats7 { get => _stats7; set => SetProperty(ref _stats7, value); }
     public string Stats9 { get => _stats9; set => SetProperty(ref _stats9, value); }
+    public string Stats12 { get => _stats12; set => SetProperty(ref _stats12, value); }
 
     // Per-strategy detail stat properties
     public string StatsNetPnL1 { get => _statsNetPnL1; set => SetProperty(ref _statsNetPnL1, value); }
-    public string StatsNetPnL5 { get => _statsNetPnL5; set => SetProperty(ref _statsNetPnL5, value); }
-    public string StatsNetPnL7 { get => _statsNetPnL7; set => SetProperty(ref _statsNetPnL7, value); }
     public string StatsNetPnL9 { get => _statsNetPnL9; set => SetProperty(ref _statsNetPnL9, value); }
+    public string StatsNetPnL12 { get => _statsNetPnL12; set => SetProperty(ref _statsNetPnL12, value); }
 
     public string StatsWinRate1 { get => _statsWinRate1; set => SetProperty(ref _statsWinRate1, value); }
-    public string StatsWinRate5 { get => _statsWinRate5; set => SetProperty(ref _statsWinRate5, value); }
-    public string StatsWinRate7 { get => _statsWinRate7; set => SetProperty(ref _statsWinRate7, value); }
     public string StatsWinRate9 { get => _statsWinRate9; set => SetProperty(ref _statsWinRate9, value); }
+    public string StatsWinRate12 { get => _statsWinRate12; set => SetProperty(ref _statsWinRate12, value); }
 
     public string StatsSharpe1 { get => _statsSharpe1; set => SetProperty(ref _statsSharpe1, value); }
-    public string StatsSharpe5 { get => _statsSharpe5; set => SetProperty(ref _statsSharpe5, value); }
-    public string StatsSharpe7 { get => _statsSharpe7; set => SetProperty(ref _statsSharpe7, value); }
     public string StatsSharpe9 { get => _statsSharpe9; set => SetProperty(ref _statsSharpe9, value); }
+    public string StatsSharpe12 { get => _statsSharpe12; set => SetProperty(ref _statsSharpe12, value); }
 
     public string StatsMaxDD1 { get => _statsMaxDD1; set => SetProperty(ref _statsMaxDD1, value); }
-    public string StatsMaxDD5 { get => _statsMaxDD5; set => SetProperty(ref _statsMaxDD5, value); }
-    public string StatsMaxDD7 { get => _statsMaxDD7; set => SetProperty(ref _statsMaxDD7, value); }
     public string StatsMaxDD9 { get => _statsMaxDD9; set => SetProperty(ref _statsMaxDD9, value); }
+    public string StatsMaxDD12 { get => _statsMaxDD12; set => SetProperty(ref _statsMaxDD12, value); }
 
     public string StatsPF1 { get => _statsPF1; set => SetProperty(ref _statsPF1, value); }
-    public string StatsPF5 { get => _statsPF5; set => SetProperty(ref _statsPF5, value); }
-    public string StatsPF7 { get => _statsPF7; set => SetProperty(ref _statsPF7, value); }
     public string StatsPF9 { get => _statsPF9; set => SetProperty(ref _statsPF9, value); }
+    public string StatsPF12 { get => _statsPF12; set => SetProperty(ref _statsPF12, value); }
 
     public string StatsTrades1 { get => _statsTrades1; set => SetProperty(ref _statsTrades1, value); }
-    public string StatsTrades5 { get => _statsTrades5; set => SetProperty(ref _statsTrades5, value); }
-    public string StatsTrades7 { get => _statsTrades7; set => SetProperty(ref _statsTrades7, value); }
     public string StatsTrades9 { get => _statsTrades9; set => SetProperty(ref _statsTrades9, value); }
+    public string StatsTrades12 { get => _statsTrades12; set => SetProperty(ref _statsTrades12, value); }
 
     // Per-strategy equity curves
     public IReadOnlyList<EquityPoint>? EquityCurve1 { get => _equityCurve1; set => SetProperty(ref _equityCurve1, value); }
-    public IReadOnlyList<EquityPoint>? EquityCurve5 { get => _equityCurve5; set => SetProperty(ref _equityCurve5, value); }
-    public IReadOnlyList<EquityPoint>? EquityCurve7 { get => _equityCurve7; set => SetProperty(ref _equityCurve7, value); }
     public IReadOnlyList<EquityPoint>? EquityCurve9 { get => _equityCurve9; set => SetProperty(ref _equityCurve9, value); }
+    public IReadOnlyList<EquityPoint>? EquityCurve12 { get => _equityCurve12; set => SetProperty(ref _equityCurve12, value); }
 
     public void OnCalendarDateSelected(string strategyName, DateOnly? date)
     {
@@ -593,12 +578,10 @@ public sealed class BacktestViewModel : ObservableObject
             // Per-strategy
             if (_strategyResults.TryGetValue("EmaPullback", out var r1))
             { CalendarSummaries1 = computed.stratSummaries.GetValueOrDefault("EmaPullback"); Stats1 = FormatStats(r1); ApplyStrategyDetail(r1, 1); }
-            if (_strategyResults.TryGetValue("EmaPullbackBarBreak", out var r5))
-            { CalendarSummaries5 = computed.stratSummaries.GetValueOrDefault("EmaPullbackBarBreak"); Stats5 = FormatStats(r5); ApplyStrategyDetail(r5, 5); }
-            if (_strategyResults.TryGetValue("SecondLeg", out var r7))
-            { CalendarSummaries7 = computed.stratSummaries.GetValueOrDefault("SecondLeg"); Stats7 = FormatStats(r7); ApplyStrategyDetail(r7, 7); }
             if (_strategyResults.TryGetValue("BrooksPA", out var r9))
             { CalendarSummaries9 = computed.stratSummaries.GetValueOrDefault("BrooksPA"); Stats9 = FormatStats(r9); ApplyStrategyDetail(r9, 9); }
+            if (_strategyResults.TryGetValue("SlopeInflection", out var r12))
+            { CalendarSummaries12 = computed.stratSummaries.GetValueOrDefault("SlopeInflection"); Stats12 = FormatStats(r12); ApplyStrategyDetail(r12, 12); }
 
             // Populate strategy overview
             StrategyOverview.Clear();
@@ -636,9 +619,8 @@ public sealed class BacktestViewModel : ObservableObject
         switch (idx)
         {
             case 1: StatsNetPnL1 = pnl; StatsWinRate1 = wr; StatsSharpe1 = sh; StatsMaxDD1 = dd; StatsPF1 = pf; StatsTrades1 = tr; EquityCurve1 = eq; break;
-            case 5: StatsNetPnL5 = pnl; StatsWinRate5 = wr; StatsSharpe5 = sh; StatsMaxDD5 = dd; StatsPF5 = pf; StatsTrades5 = tr; EquityCurve5 = eq; break;
-            case 7: StatsNetPnL7 = pnl; StatsWinRate7 = wr; StatsSharpe7 = sh; StatsMaxDD7 = dd; StatsPF7 = pf; StatsTrades7 = tr; EquityCurve7 = eq; break;
             case 9: StatsNetPnL9 = pnl; StatsWinRate9 = wr; StatsSharpe9 = sh; StatsMaxDD9 = dd; StatsPF9 = pf; StatsTrades9 = tr; EquityCurve9 = eq; break;
+            case 12: StatsNetPnL12 = pnl; StatsWinRate12 = wr; StatsSharpe12 = sh; StatsMaxDD12 = dd; StatsPF12 = pf; StatsTrades12 = tr; EquityCurve12 = eq; break;
         }
     }
 
@@ -711,9 +693,8 @@ public sealed class BacktestViewModel : ObservableObject
         MaxLossesPerDay = MaxLossesPerDay,
         MaxStopPoints = MaxStopPoints,
         EnableStrategy1 = EnableStrategy1,
-        EnableStrategy5 = EnableStrategy5,
-        EnableStrategy7 = EnableStrategy7,
         EnableStrategy9 = EnableStrategy9,
+        EnableStrategy12 = EnableStrategy12,
         EnableHourlyBias = EnableHourlyBias,
         HourlyRangeLookback = HourlyRangeLookback,
         RangeTopPct = RangeTopPct,
@@ -751,7 +732,14 @@ public sealed class BacktestViewModel : ObservableObject
         LateCutoffMinute = _appConfig.MultiStrategy.LateCutoffMinute,
         MaxDailyTrades = _appConfig.MultiStrategy.MaxDailyTrades,
         EnableBreakEvenStop = _appConfig.MultiStrategy.EnableBreakEvenStop,
-        BreakEvenActivationR = _appConfig.MultiStrategy.BreakEvenActivationR
+        BreakEvenActivationR = _appConfig.MultiStrategy.BreakEvenActivationR,
+        SI_SmoothingPeriod = _appConfig.MultiStrategy.SI_SmoothingPeriod,
+        SI_FlatCrossWindow = _appConfig.MultiStrategy.SI_FlatCrossWindow,
+        SI_SlopeEpsTicks = _appConfig.MultiStrategy.SI_SlopeEpsTicks,
+        SI_StrongTrendLookback = _appConfig.MultiStrategy.SI_StrongTrendLookback,
+        SI_StrongTrendPct = _appConfig.MultiStrategy.SI_StrongTrendPct,
+        SI_CooldownBars = _appConfig.MultiStrategy.SI_CooldownBars,
+        SI_UseTightStop = _appConfig.MultiStrategy.SI_UseTightStop
     };
 
     private BacktestConfig BuildConfig() => new()

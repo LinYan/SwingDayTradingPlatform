@@ -85,8 +85,6 @@ public static class TestHelpers
         SlowEmaPeriod = 50,
         AtrPeriod = 14,
         EnableStrategy1 = true,
-        EnableStrategy5 = true,
-        EnableStrategy7 = true,
         EnableStrategy9 = true,
         EnableHourlyBias = false, // disable for simpler testing
         EnableTimeFilter = false, // disable for simpler testing
