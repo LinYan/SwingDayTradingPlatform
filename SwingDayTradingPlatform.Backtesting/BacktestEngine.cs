@@ -20,6 +20,14 @@ public sealed class BacktestEngine
         CancellationToken ct = default,
         Action<double>? onProgress = null)
     {
+        var configErrors = config.Validate();
+        if (configErrors.Count > 0)
+            throw new ArgumentException($"Invalid BacktestConfig: {string.Join("; ", configErrors)}");
+
+        var paramErrors = parameters.Validate();
+        if (paramErrors.Count > 0)
+            throw new ArgumentException($"Invalid BacktestParameters: {string.Join("; ", paramErrors)}");
+
         var multiConfig = BuildMultiConfig(parameters);
         var riskConfig = parameters.ToRiskConfig();
         var engine = new MultiStrategyEngine(multiConfig);
@@ -96,6 +104,7 @@ public sealed class BacktestEngine
                     var dayEndExit = ApplyExitSlippage(bar.Open, position.Direction, config.SlippagePoints);
                     var flatPnL = CloseTrade(position, dayEndExit, "DayEnd", config, trades, ref tradeNumber, bar.OpenTimeUtc);
                     equity += flatPnL;
+                    dailyPnLPoints += trades[^1].PnLPoints;
                     riskEngine.RegisterClosedTrade(flatPnL, trades[^1].RMultiple);
                     position = null;
                 }
@@ -184,16 +193,35 @@ public sealed class BacktestEngine
             var canOpen = insideWindow &&
                           !dayTradingComplete &&
                           position is null &&
-                          riskEngine.CanOpenNewPosition(bar.CloseTimeUtc, position is not null, dayTradingComplete);
+                          !exitedThisBar &&
+                          riskEngine.CanOpenNewPosition(bar.CloseTimeUtc, false, dayTradingComplete);
 
             // Feed bar to engine
             var signal = engine.OnBarClosed(bar, currentPosition, localTime, canOpen, tradingConfig);
 
-            // Process flatten signal from bar-break exit
+            // Process flatten signal from engine (trailing stops, bar-break, reversal, target)
             if (signal is not null && signal.IsFlattenSignal && position is not null)
             {
-                var barBreakExit = ApplyExitSlippage(bar.Close, position.Direction, config.SlippagePoints);
-                var pnl = CloseTrade(position, barBreakExit, "BarBreakExit", config, trades, ref tradeNumber, bar.CloseTimeUtc);
+                // signal.EntryPrice is set to the correct exit level by the engine:
+                // - Trailing stops: trailing stop level (market order → slippage)
+                // - Bar-break/reversal: bar.Close (market order → slippage)
+                // - Target hit: target price (limit order → no slippage)
+                var isTargetExit = signal.SignalId.StartsWith("TGT", StringComparison.Ordinal);
+                var exitPrice = isTargetExit
+                    ? signal.EntryPrice
+                    : ApplyExitSlippage(signal.EntryPrice, position.Direction, config.SlippagePoints);
+
+                // Determine exit reason from signal ID prefix
+                var exitReason = signal.SignalId switch
+                {
+                    var id when id.StartsWith("SITRAIL", StringComparison.Ordinal) => "SITrailingStop",
+                    var id when id.StartsWith("TRAIL", StringComparison.Ordinal) => "TrailingStop",
+                    var id when id.StartsWith("REV", StringComparison.Ordinal) => "ReversalBarExit",
+                    var id when id.StartsWith("TGT", StringComparison.Ordinal) => "Target",
+                    _ => "BarBreakExit"
+                };
+
+                var pnl = CloseTrade(position, exitPrice, exitReason, config, trades, ref tradeNumber, bar.CloseTimeUtc);
                 equity += pnl;
                 var pnlPts = trades[^1].PnLPoints;
                 dailyPnLPoints += pnlPts;
@@ -231,6 +259,11 @@ public sealed class BacktestEngine
                     }
                 }
             }
+
+            // Sync trailing stop: after engine processes the bar, update PendingPosition's
+            // stop price so SimulatedOrderFill uses the current trailing level on the next bar
+            if (position is not null && engine.CurrentStopLevel.HasValue)
+                position.StopPrice = engine.CurrentStopLevel.Value;
 
             // Record equity point (update peak BEFORE computing drawdown)
             if (equity > peakEquity) peakEquity = equity;
@@ -276,6 +309,7 @@ public sealed class BacktestEngine
                 TrailingStopAtrMultiplier = config.TrailingStopAtrMultiplier,
                 TrailingStopActivationBars = config.TrailingStopActivationBars,
                 UseBarBreakExit = config.UseBarBreakExit,
+                MinBarBreakHoldBars = config.MinBarBreakHoldBars,
                 UseReversalBarExit = config.UseReversalBarExit,
                 RsiPeriod = config.RsiPeriod,
                 EmaPullbackRewardRatio = config.EmaPullbackRewardRatio,
@@ -405,7 +439,7 @@ public sealed class BacktestEngine
     {
         public PositionSide Direction { get; } = direction;
         public decimal EntryPrice { get; } = entryPrice;
-        public decimal StopPrice { get; } = stopPrice;
+        public decimal StopPrice { get; set; } = stopPrice;
         public decimal? TargetPrice { get; } = targetPrice;
         public DateTimeOffset EntryTime { get; } = entryTime;
         public string SignalReason { get; } = signalReason;

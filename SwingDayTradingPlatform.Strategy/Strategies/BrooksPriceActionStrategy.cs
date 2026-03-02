@@ -31,6 +31,7 @@ public static class BrooksPriceActionStrategy
         int idx)
     {
         if (idx < 10 || ctx.Atr14 <= 0) return null;
+        if (config.TickSize <= 0) return null; // Guard against division by zero
 
         var bar = bars[idx];
         var tick = config.TickSize;

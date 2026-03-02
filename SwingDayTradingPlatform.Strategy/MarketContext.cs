@@ -11,6 +11,11 @@ public sealed class MarketContext
     private readonly List<MarketBar> _pendingHourlyCandles = [];
     private DateTimeOffset _currentHourBoundary;
 
+    // Running state for hourly bar aggregation (avoids LINQ Max/Min/Sum per 5-min bar)
+    private decimal _hourlyHigh;
+    private decimal _hourlyLow;
+    private decimal _hourlyVolume;
+
     // Running EMA state to avoid O(N) recomputation each bar
     private decimal _runningEma20;
     private decimal _runningEma50;
@@ -21,6 +26,12 @@ public sealed class MarketContext
     // Incremental VWAP state
     private decimal _cumPriceVolume;
     private decimal _cumVolume;
+
+    // Incremental RSI state (Wilder's smoothing)
+    private decimal _rsiAvgGain;
+    private decimal _rsiAvgLoss;
+    private int _rsiBarCount;
+    private decimal _rsiPrevClose;
 
     public MarketContext(MultiStrategyConfig config)
     {
@@ -86,7 +97,7 @@ public sealed class MarketContext
         Ema20 = _runningEma20;
         Ema50 = _runningEma50;
         Atr14 = Indicators.Atr(bars, _config.AtrPeriod);
-        Rsi14 = Indicators.Rsi(bars, _config.RsiPeriod);
+        Rsi14 = UpdateRsi(bars, _config.RsiPeriod);
 
         // Incremental VWAP (reset is handled by OnNewDay using trading timezone)
         var latestBar = bars[^1];
@@ -125,6 +136,9 @@ public sealed class MarketContext
         _hourlyBars.Clear();
         _pendingHourlyCandles.Clear();
         _currentHourBoundary = default;
+        _hourlyHigh = decimal.MinValue;
+        _hourlyLow = decimal.MaxValue;
+        _hourlyVolume = 0m;
         Bias = DirectionBias.Both;
         RangeHigh = 0;
         RangeLow = 0;
@@ -152,6 +166,61 @@ public sealed class MarketContext
         }
     }
 
+    /// <summary>
+    /// Incremental RSI: seed with SMA on first call, then O(1) Wilder smoothing per bar.
+    /// Falls back to full computation if bars were trimmed (count dropped).
+    /// </summary>
+    private decimal UpdateRsi(IReadOnlyList<MarketBar> bars, int period)
+    {
+        if (bars.Count < period + 1)
+            return 50m;
+
+        if (_rsiBarCount == 0 || _rsiBarCount > bars.Count)
+        {
+            // Seed: SMA of first `period` changes, then smooth remaining
+            var gainSum = 0m;
+            var lossSum = 0m;
+            for (var i = 1; i <= period; i++)
+            {
+                var change = bars[i].Close - bars[i - 1].Close;
+                if (change > 0) gainSum += change;
+                else lossSum += Math.Abs(change);
+            }
+
+            _rsiAvgGain = gainSum / period;
+            _rsiAvgLoss = lossSum / period;
+
+            for (var i = period + 1; i < bars.Count; i++)
+            {
+                var change = bars[i].Close - bars[i - 1].Close;
+                var gain = change > 0 ? change : 0m;
+                var loss = change < 0 ? Math.Abs(change) : 0m;
+                _rsiAvgGain = (_rsiAvgGain * (period - 1) + gain) / period;
+                _rsiAvgLoss = (_rsiAvgLoss * (period - 1) + loss) / period;
+            }
+
+            _rsiPrevClose = bars[^1].Close;
+            _rsiBarCount = bars.Count;
+        }
+        else if (bars.Count > _rsiBarCount)
+        {
+            // Incremental: process only the new bar
+            var change = bars[^1].Close - _rsiPrevClose;
+            var gain = change > 0 ? change : 0m;
+            var loss = change < 0 ? Math.Abs(change) : 0m;
+            _rsiAvgGain = (_rsiAvgGain * (period - 1) + gain) / period;
+            _rsiAvgLoss = (_rsiAvgLoss * (period - 1) + loss) / period;
+            _rsiPrevClose = bars[^1].Close;
+            _rsiBarCount = bars.Count;
+        }
+
+        if (_rsiAvgLoss == 0m)
+            return _rsiAvgGain == 0m ? 50m : 100m; // No movement → neutral; all gains → overbought
+
+        var rs = _rsiAvgGain / _rsiAvgLoss;
+        return 100m - (100m / (1m + rs));
+    }
+
     private void AggregateHourlyBar(MarketBar fiveMinBar, DateTimeOffset tradingLocalTime)
     {
         // Determine the hour boundary in trading timezone (truncate to hour)
@@ -168,37 +237,39 @@ public sealed class MarketContext
 
         if (barHour > _currentHourBoundary)
         {
-            // Hour changed — finalize the previous hour (already in _hourlyBars via partial update)
+            // Hour changed — reset running state for new hour
             _pendingHourlyCandles.Clear();
             _currentHourBoundary = barHour;
+            _hourlyHigh = decimal.MinValue;
+            _hourlyLow = decimal.MaxValue;
+            _hourlyVolume = 0m;
         }
 
         _pendingHourlyCandles.Add(fiveMinBar);
 
-        // Build/update the current partial hourly bar
+        // Update running high/low/volume (O(1) per bar instead of O(N) LINQ)
+        if (fiveMinBar.High > _hourlyHigh) _hourlyHigh = fiveMinBar.High;
+        if (fiveMinBar.Low < _hourlyLow) _hourlyLow = fiveMinBar.Low;
+        _hourlyVolume += fiveMinBar.Volume;
+
+        // Build the current partial hourly bar from running state
         var open = _pendingHourlyCandles[0].Open;
-        var close = _pendingHourlyCandles[^1].Close;
-        var high = _pendingHourlyCandles.Max(b => b.High);
-        var low = _pendingHourlyCandles.Min(b => b.Low);
-        var volume = _pendingHourlyCandles.Sum(b => b.Volume);
-        var openTime = _pendingHourlyCandles[0].OpenTimeUtc;
-        var closeTime = _pendingHourlyCandles[^1].CloseTimeUtc;
-        var hourlyBar = new MarketBar(openTime, closeTime, open, high, low, close, volume);
+        var hourlyBar = new MarketBar(
+            _pendingHourlyCandles[0].OpenTimeUtc,
+            fiveMinBar.CloseTimeUtc,
+            open,
+            _hourlyHigh,
+            _hourlyLow,
+            fiveMinBar.Close,
+            _hourlyVolume);
 
         // Replace or add: first candle of new hour adds, subsequent candles replace
         if (_pendingHourlyCandles.Count == 1)
-        {
             _hourlyBars.Add(hourlyBar);
-        }
         else if (_hourlyBars.Count > 0)
-        {
             _hourlyBars[^1] = hourlyBar;
-        }
         else
-        {
-            // Safety fallback: should not happen, but avoid IndexOutOfRangeException
             _hourlyBars.Add(hourlyBar);
-        }
     }
 
     private void UpdateHourlyBias(decimal currentPrice)
@@ -210,9 +281,17 @@ public sealed class MarketContext
             return;
         }
 
-        var recentHourly = _hourlyBars.TakeLast(lookback).ToList();
-        RangeHigh = recentHourly.Max(b => b.High);
-        RangeLow = recentHourly.Min(b => b.Low);
+        // Compute range high/low without LINQ allocation
+        var startIdx = _hourlyBars.Count - lookback;
+        var rangeHigh = decimal.MinValue;
+        var rangeLow = decimal.MaxValue;
+        for (var i = startIdx; i < _hourlyBars.Count; i++)
+        {
+            if (_hourlyBars[i].High > rangeHigh) rangeHigh = _hourlyBars[i].High;
+            if (_hourlyBars[i].Low < rangeLow) rangeLow = _hourlyBars[i].Low;
+        }
+        RangeHigh = rangeHigh;
+        RangeLow = rangeLow;
 
         var range = RangeHigh - RangeLow;
         if (range <= 0)

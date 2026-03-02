@@ -171,4 +171,40 @@ public sealed class BacktestParameters
     };
 
     public string Label => $"F{FastEmaPeriod}/S{SlowEmaPeriod} ATR{AtrPeriod}x{AtrMultiplier} RR{RewardRiskRatio}";
+
+    public List<string> Validate()
+    {
+        var errors = new List<string>();
+
+        if (FastEmaPeriod <= 0)
+            errors.Add($"FastEmaPeriod must be > 0, got {FastEmaPeriod}");
+        if (SlowEmaPeriod <= 0)
+            errors.Add($"SlowEmaPeriod must be > 0, got {SlowEmaPeriod}");
+        if (FastEmaPeriod >= SlowEmaPeriod)
+            errors.Add($"FastEmaPeriod ({FastEmaPeriod}) must be < SlowEmaPeriod ({SlowEmaPeriod})");
+        if (AtrPeriod <= 0)
+            errors.Add($"AtrPeriod must be > 0, got {AtrPeriod}");
+        if (AtrMultiplier <= 0)
+            errors.Add($"AtrMultiplier must be > 0, got {AtrMultiplier}");
+        if (RewardRiskRatio <= 0)
+            errors.Add($"RewardRiskRatio must be > 0, got {RewardRiskRatio}");
+        if (MaxTradesPerDay <= 0)
+            errors.Add($"MaxTradesPerDay must be > 0, got {MaxTradesPerDay}");
+        if (MaxLossesPerDay <= 0)
+            errors.Add($"MaxLossesPerDay must be > 0, got {MaxLossesPerDay}");
+        if (MaxStopPoints <= 0)
+            errors.Add($"MaxStopPoints must be > 0, got {MaxStopPoints}");
+        if (RsiPeriod <= 1)
+            errors.Add($"RsiPeriod must be > 1, got {RsiPeriod}");
+        if (RangeTopPct is < 0 or > 100)
+            errors.Add($"RangeTopPct must be 0-100, got {RangeTopPct}");
+        if (RangeBottomPct is < 0 or > 100)
+            errors.Add($"RangeBottomPct must be 0-100, got {RangeBottomPct}");
+        if (RangeBottomPct >= RangeTopPct)
+            errors.Add($"RangeBottomPct ({RangeBottomPct}) must be < RangeTopPct ({RangeTopPct})");
+        if (TickSize <= 0)
+            errors.Add($"TickSize must be > 0, got {TickSize}");
+
+        return errors;
+    }
 }

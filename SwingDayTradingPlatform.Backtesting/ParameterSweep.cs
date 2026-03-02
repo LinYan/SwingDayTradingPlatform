@@ -60,6 +60,8 @@ public sealed class ParameterSweep
         return combos;
     }
 
+    public int MaxDegreeOfParallelism { get; init; } = Environment.ProcessorCount;
+
     public async Task<List<BacktestResult>> RunSweepAsync(
         List<MarketBar> bars,
         BacktestConfig config,
@@ -80,7 +82,7 @@ public sealed class ParameterSweep
             Enumerable.Range(0, total),
             new ParallelOptions
             {
-                MaxDegreeOfParallelism = Environment.ProcessorCount,
+                MaxDegreeOfParallelism = MaxDegreeOfParallelism,
                 CancellationToken = ct
             },
             (index, token) =>

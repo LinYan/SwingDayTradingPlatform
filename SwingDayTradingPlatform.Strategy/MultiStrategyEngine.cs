@@ -24,6 +24,7 @@ public sealed class MultiStrategyEngine
     public IReadOnlyList<MarketBar> Bars => _bars;
     public decimal FastEma => _context.Ema20;
     public decimal SlowEma => _context.Ema50;
+    public decimal? CurrentStopLevel => _activeTrade?.TrailingStopLevel;
 
     public StrategySignal? OnBarClosed(
         MarketBar bar,
@@ -353,10 +354,15 @@ public sealed class MultiStrategyEngine
             return null;
         }
 
-        // Record active trade context
-        var strategyName = signal.Reason.Contains('[')
-            ? signal.Reason.Split(']')[0].TrimStart('[')
-            : "Unknown";
+        // Extract strategy name from reason "[StrategyName] ..." without allocations
+        var strategyName = "Unknown";
+        var reasonSpan = signal.Reason.AsSpan();
+        if (reasonSpan.Length > 2 && reasonSpan[0] == '[')
+        {
+            var bracketEnd = reasonSpan.IndexOf(']');
+            if (bracketEnd > 1)
+                strategyName = signal.Reason[1..bracketEnd];
+        }
 
         _activeTrade = new ActiveTradeContext
         {

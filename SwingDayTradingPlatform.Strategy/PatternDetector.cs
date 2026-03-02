@@ -46,9 +46,9 @@ public static class PatternDetector
         {
             if (i < 0 || i >= bars.Count || i == candidateIdx)
                 continue;
-            if (bars[i].High >= candidate.High)
+            if (bars[i].High > candidate.High)
                 isSwingHigh = false;
-            if (bars[i].Low <= candidate.Low)
+            if (bars[i].Low < candidate.Low)
                 isSwingLow = false;
         }
 
@@ -360,17 +360,6 @@ public static class PatternDetector
             PositionSide.Short => bar.High > prevBar.High,
             _ => false
         };
-    }
-
-    /// <summary>
-    /// ABCD exit: long exits when bar is bearish AND closes below previous bar's low;
-    /// short exits when bar is bullish AND closes above previous bar's high.
-    /// </summary>
-    public static bool CheckCloseBeyondPrevBarExit(MarketBar bar, MarketBar prevBar, PositionSide direction)
-    {
-        return direction == PositionSide.Long
-            ? bar.Close < bar.Open && bar.Close < prevBar.Low
-            : bar.Close > bar.Open && bar.Close > prevBar.High;
     }
 
     /// <summary>

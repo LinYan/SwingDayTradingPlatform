@@ -83,7 +83,8 @@ The WPF desktop dashboard includes per-strategy tabs with:
 - **Stat cards** — Net P&L, win rate, Sharpe, max drawdown, profit factor, trade count
 - **Equity curve** — Bezier-smoothed line with drawdown shading, high watermark, and crosshair tooltip
 - **Daily P&L bar chart** — Green/red vertical bars for every trading day across the full backtest period, with hover tooltips and summary overlay (total P&L, win rate, trading days)
-- **P&L calendar** — Month-by-month calendar heatmap with per-day detail, color intensity by magnitude, and click-to-drill-down
+- **P&L calendar** — Month-by-month calendar heatmap with tiered rendering (ultra-compact / compact / normal based on cell height), color intensity by magnitude, and click-to-drill-down day detail window
+- **Day detail window** — Intraday chart with 3:2 chart-to-trade-log ratio showing 7-8 trade rows, trade markers, and per-trade MAE/MFE
 - **Monthly returns table** — Tabular P&L and return % by month
 
 ## Backtesting
@@ -91,19 +92,26 @@ The WPF desktop dashboard includes per-strategy tabs with:
 The backtesting engine simulates full order lifecycle with realistic fills:
 
 - Entry slippage modeling (market order fill degradation)
+- Smart exit slippage: targets (limit orders) get zero slippage, stops/reversals get market slippage
 - Stop/target fill simulation on each bar
 - Commission: $5 per trade leg
 - Daily reset of trade count, loss count, VWAP
 - Forced session flatten at configured time
+- Monte Carlo equity floor (prevents negative equity in extreme scenarios)
+- Configurable parallel sweep degree (`MaxDegreeOfParallelism`)
 
 ### Backtest metrics
 
 - Net/Gross P&L, return %, win rate, profit factor
 - Sharpe ratio, Sortino ratio
-- Max drawdown (absolute and percentage)
+- Max drawdown (absolute and percentage), drawdown recovery bars (max and average)
 - Per-trade MAE/MFE, hold time, strategy attribution
 - Daily/monthly return aggregation
 - Full equity curve with drawdown tracking
+
+### Input validation
+
+`BacktestConfig` and `BacktestParameters` each expose a `Validate()` method that checks for invalid settings (date ordering, capital/point values, EMA period ordering, ATR/stop limits, RSI bounds, range percentiles, tick size). The engine calls these before running and throws `ArgumentException` with all validation errors.
 
 ### Running a backtest
 
@@ -115,7 +123,9 @@ All computed incrementally (not recomputed from full history each bar):
 
 - **EMA** (20/50 period) - running multiplier state
 - **ATR** (14 period) - true range average
+- **RSI** (14 period) - incremental Wilder smoothing (seeded with SMA, then O(1) per bar)
 - **Session VWAP** - cumulative price*volume / volume, resets daily
+- **Hourly bars** - O(1) running aggregation for bias filter (no per-bar LINQ)
 
 ## Risk management
 
@@ -163,6 +173,9 @@ The test suite covers:
 - Simulated order fills (stop/target)
 - JSON state persistence
 - App config loading/saving
+- Config and parameter validation (date ordering, bounds, invalid combos)
+- Drawdown recovery calculation
+- Markdown report generation (empty results, rankings, Monte Carlo CI, streaks)
 
 ## IBKR setup
 

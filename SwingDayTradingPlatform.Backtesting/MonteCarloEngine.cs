@@ -100,10 +100,13 @@ public static class MonteCarloEngine
             if ((i + 1) % tradesPerDay == 0 || i == tradePnLs.Count - 1)
             {
                 var startEq = equity - dayPnL;
-                if (startEq > 0)
+                if (startEq > 0 && dayPnL != 0)
                     dailyReturns.Add((double)dayPnL / (double)startEq);
                 dayPnL = 0m;
             }
+
+            // Prevent equity from going below zero (margin call simulation)
+            if (equity <= 0) equity = 0.01m;
         }
 
         var netPnL = equity - startingCapital;

@@ -84,9 +84,16 @@ public static class MarkdownReportWriter
         sb.AppendLine("## Executive Summary");
         sb.AppendLine();
 
-        var bestByExpR = results.OrderByDescending(kv => kv.Value.ExpectancyR).First();
-        var bestByPnL = results.OrderByDescending(kv => kv.Value.NetPnL).First();
-        var worstDD = results.OrderByDescending(kv => kv.Value.MaxDrawdownPct).First();
+        if (results.Count == 0)
+        {
+            sb.AppendLine("*No strategy results available.*");
+            sb.AppendLine();
+            return;
+        }
+
+        var bestByExpR = results.MaxBy(kv => kv.Value.ExpectancyR);
+        var bestByPnL = results.MaxBy(kv => kv.Value.NetPnL);
+        var worstDD = results.MaxBy(kv => kv.Value.MaxDrawdownPct);
 
         sb.AppendLine($"- **Best strategy (ExpR):** {bestByExpR.Key} — ExpR: {bestByExpR.Value.ExpectancyR:F3}, PF: {bestByExpR.Value.ProfitFactor:F2}");
         sb.AppendLine($"- **Best strategy (PnL):** {bestByPnL.Key} — Net PnL: ${bestByPnL.Value.NetPnL:N2}");
@@ -228,15 +235,15 @@ public static class MarkdownReportWriter
 
         sb.AppendLine();
 
-        // Consecutive wins/losses and hold times
-        sb.AppendLine("| Strategy | MaxConsWins | MaxConsLosses | AvgHold | MaxHold |");
-        sb.AppendLine("|----------|------------|---------------|---------|---------|");
+        // Consecutive wins/losses, hold times, and drawdown recovery
+        sb.AppendLine("| Strategy | MaxConsWins | MaxConsLosses | AvgHold | MaxHold | MaxDD Recovery | AvgDD Recovery |");
+        sb.AppendLine("|----------|------------|---------------|---------|---------|----------------|----------------|");
 
         foreach (var (name, r) in results.OrderByDescending(kv => kv.Value.ExpectancyR))
         {
             var avgHold = r.AvgHoldTimeMinutes >= 60 ? $"{r.AvgHoldTimeMinutes / 60:F1}h" : $"{r.AvgHoldTimeMinutes:F0}m";
             var maxHold = r.MaxHoldTimeMinutes >= 60 ? $"{r.MaxHoldTimeMinutes / 60:F1}h" : $"{r.MaxHoldTimeMinutes:F0}m";
-            sb.AppendLine($"| {name} | {r.MaxConsecutiveWins} | {r.MaxConsecutiveLosses} | {avgHold} | {maxHold} |");
+            sb.AppendLine($"| {name} | {r.MaxConsecutiveWins} | {r.MaxConsecutiveLosses} | {avgHold} | {maxHold} | {r.MaxDrawdownRecoveryBars} bars | {r.AvgDrawdownRecoveryBars:F1} bars |");
         }
 
         sb.AppendLine();

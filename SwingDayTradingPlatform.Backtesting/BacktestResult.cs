@@ -48,6 +48,8 @@ public sealed class BacktestResult
     public decimal TailRatio { get; init; }
     public decimal MfeEfficiency { get; init; }
     public decimal MaeRatio { get; init; }
+    public int MaxDrawdownRecoveryBars { get; init; }
+    public decimal AvgDrawdownRecoveryBars { get; init; }
 }
 
 public sealed record EquityPoint(

@@ -57,8 +57,8 @@ public sealed class WalkForwardEngine
 
             if (isBars.Count < 100 || oosBars.Count < 20) continue;
 
-            // Run parameter sweep on IS
-            var isConfig = new BacktestConfig
+            // Shared config for both IS sweep and OOS evaluation (same trading rules)
+            var foldConfig = new BacktestConfig
             {
                 StartDate = baseConfig.StartDate,
                 EndDate = baseConfig.EndDate,
@@ -76,7 +76,7 @@ public sealed class WalkForwardEngine
                 InSampleCutoff = baseConfig.InSampleCutoff,
             };
             var sweep = new ParameterSweep();
-            var sweepResults = await sweep.RunSweepAsync(isBars, isConfig, sweepRanges, ct);
+            var sweepResults = await sweep.RunSweepAsync(isBars, foldConfig, sweepRanges, ct);
 
             // Select best by ExpectancyR (min 5 trades)
             var bestResult = sweepResults
@@ -90,7 +90,7 @@ public sealed class WalkForwardEngine
 
             // Run OOS with best params
             var oosEngine = new BacktestEngine(strategyFilter);
-            var oosResult = oosEngine.Run(oosBars, bestParams, isConfig, ct);
+            var oosResult = oosEngine.Run(oosBars, bestParams, foldConfig, ct);
 
             allOosTrades.AddRange(oosResult.Trades);
             allOosEquity.AddRange(oosResult.EquityCurve);

@@ -52,6 +52,7 @@ public static class ResultCalculator
         var tailRatio = CalculateTailRatio(trades);
         var mfeEfficiency = CalculateMfeEfficiency(trades);
         var maeRatio = CalculateMaeRatio(trades);
+        var (maxRecoveryBars, avgRecoveryBars) = CalculateDrawdownRecovery(equityCurve);
 
         return new BacktestResult
         {
@@ -94,7 +95,9 @@ public static class ResultCalculator
             UlcerIndex = ulcerIndex,
             TailRatio = tailRatio,
             MfeEfficiency = mfeEfficiency,
-            MaeRatio = maeRatio
+            MaeRatio = maeRatio,
+            MaxDrawdownRecoveryBars = maxRecoveryBars,
+            AvgDrawdownRecoveryBars = avgRecoveryBars
         };
     }
 
@@ -413,5 +416,43 @@ public static class ResultCalculator
 
         var ratios = tradesWithStop.Select(t => t.MAE / t.InitialStopDistance).ToList();
         return ratios.Average();
+    }
+
+    public static (int MaxRecoveryBars, decimal AvgRecoveryBars) CalculateDrawdownRecovery(
+        List<EquityPoint> equityCurve)
+    {
+        if (equityCurve.Count < 2) return (0, 0m);
+
+        var peak = equityCurve[0].Equity;
+        var inDrawdown = false;
+        var drawdownStartBar = 0;
+        var maxRecovery = 0;
+        var recoveries = new List<int>();
+
+        for (var i = 0; i < equityCurve.Count; i++)
+        {
+            var equity = equityCurve[i].Equity;
+
+            if (equity >= peak)
+            {
+                if (inDrawdown)
+                {
+                    var recoveryBars = i - drawdownStartBar;
+                    recoveries.Add(recoveryBars);
+                    if (recoveryBars > maxRecovery)
+                        maxRecovery = recoveryBars;
+                    inDrawdown = false;
+                }
+                peak = equity;
+            }
+            else if (!inDrawdown)
+            {
+                inDrawdown = true;
+                drawdownStartBar = i;
+            }
+        }
+
+        var avg = recoveries.Count > 0 ? (decimal)recoveries.Average() : 0m;
+        return (maxRecovery, avg);
     }
 }

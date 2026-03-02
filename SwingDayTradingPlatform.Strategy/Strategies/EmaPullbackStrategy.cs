@@ -47,6 +47,7 @@ public static class EmaPullbackStrategy
             {
                 var stop = swingLowPrice - tick - ctx.Atr14 * config.EmaStopAtrBuffer;
                 var risk = bar.Close - stop;
+                if (risk <= 0) return null; // Stop at or above entry — invalid setup
                 var target = bar.Close + risk * config.EmaPullbackRewardRatio;
                 return new StrategySignal(
                     $"EMA-L-{bar.CloseTimeUtc:yyyyMMddHHmmss}",
@@ -74,6 +75,7 @@ public static class EmaPullbackStrategy
             {
                 var stop = swingHighPrice + tick + ctx.Atr14 * config.EmaStopAtrBuffer;
                 var risk = stop - bar.Close;
+                if (risk <= 0) return null; // Stop at or below entry — invalid setup
                 var target = bar.Close - risk * config.EmaPullbackRewardRatio;
                 return new StrategySignal(
                     $"EMA-S-{bar.CloseTimeUtc:yyyyMMddHHmmss}",

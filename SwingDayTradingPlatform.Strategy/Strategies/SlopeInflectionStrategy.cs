@@ -19,12 +19,14 @@ public static class SlopeInflectionStrategy
 {
     public const string Name = "SlopeInflection";
 
-    // Incremental EMA state — avoids O(N) recomputation and survives bar trimming
-    private static decimal _runningEma;
-    private static decimal _prevEma;
-    private static int _emaBarCount;
-    private static int _emaPeriod;
-    private static decimal _emaMultiplier;
+    // Incremental EMA state — avoids O(N) recomputation and survives bar trimming.
+    // [ThreadStatic] ensures thread-safety during parallel parameter sweeps
+    // (ParameterSweep.RunSweepAsync uses Parallel.ForEachAsync).
+    [ThreadStatic] private static decimal _runningEma;
+    [ThreadStatic] private static decimal _prevEma;
+    [ThreadStatic] private static int _emaBarCount;
+    [ThreadStatic] private static int _emaPeriod;
+    [ThreadStatic] private static decimal _emaMultiplier;
 
     public static StrategySignal? Evaluate(
         IReadOnlyList<MarketBar> bars,
@@ -134,15 +136,23 @@ public static class SlopeInflectionStrategy
     /// </summary>
     private static void UpdateEma(IReadOnlyList<MarketBar> bars, int period)
     {
-        if (_emaPeriod != period || _emaBarCount == 0 || _emaBarCount > bars.Count)
+        if (_emaPeriod != period || _emaBarCount == 0)
         {
-            // Reseed: compute full EMA from scratch
+            // Reseed: compute full EMA from scratch (first use or period changed)
             _emaPeriod = period;
             _emaMultiplier = 2m / (period + 1);
             _runningEma = bars[0].Close;
             for (var i = 1; i < bars.Count; i++)
                 _runningEma = (bars[i].Close - _runningEma) * _emaMultiplier + _runningEma;
             _prevEma = _runningEma; // approximation
+            _emaBarCount = bars.Count;
+        }
+        else if (_emaBarCount > bars.Count)
+        {
+            // Bar trimming happened: continue incrementally with the latest bar
+            // (the latest bar is new and hasn't been processed yet)
+            _prevEma = _runningEma;
+            _runningEma = (bars[^1].Close - _runningEma) * _emaMultiplier + _runningEma;
             _emaBarCount = bars.Count;
         }
         else if (bars.Count > _emaBarCount)
