@@ -73,33 +73,33 @@ public sealed class PnLCalendarCanvas : FrameworkElement
     private static readonly Typeface MonoTypeface = new("Consolas");
 
     // Colors — modern flat palette
-    private static readonly Brush BgBrush = new SolidColorBrush(Color.FromRgb(0xFA, 0xFA, 0xF8));
+    private static readonly Brush BgBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B));
     private static readonly Brush HeaderBg;
-    private static readonly Brush GreenBg = new SolidColorBrush(Color.FromArgb(65, 0x0F, 0x9D, 0x7A));
-    private static readonly Brush RedBg = new SolidColorBrush(Color.FromArgb(65, 0xC4, 0x4B, 0x3B));
+    private static readonly Brush GreenBg = new SolidColorBrush(Color.FromArgb(65, 0x10, 0xB9, 0x81));
+    private static readonly Brush RedBg = new SolidColorBrush(Color.FromArgb(65, 0xEF, 0x44, 0x44));
     private static readonly Brush GrayBg = new SolidColorBrush(Color.FromArgb(35, 0x64, 0x74, 0x8B));
-    private static readonly Brush HoverOverlay = new SolidColorBrush(Color.FromArgb(30, 0x2B, 0x6C, 0xB0));
-    private static readonly Brush GreenTextBrush = new SolidColorBrush(Color.FromRgb(0x05, 0x7A, 0x5E));
-    private static readonly Brush RedTextBrush = new SolidColorBrush(Color.FromRgb(0xB9, 0x3C, 0x2C));
-    private static readonly Brush SelectedBorderBrush = new SolidColorBrush(Color.FromRgb(0x2B, 0x6C, 0xB0));
-    private static readonly Brush DayNumBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B));
+    private static readonly Brush HoverOverlay = new SolidColorBrush(Color.FromArgb(25, 0x38, 0xBD, 0xF8));
+    private static readonly Brush GreenTextBrush = new SolidColorBrush(Color.FromRgb(0x10, 0xB9, 0x81));
+    private static readonly Brush RedTextBrush = new SolidColorBrush(Color.FromRgb(0xEF, 0x44, 0x44));
+    private static readonly Brush SelectedBorderBrush = new SolidColorBrush(Color.FromRgb(0x3B, 0x82, 0xF6));
+    private static readonly Brush DayNumBrush = new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1));
     private static readonly Brush DayHeaderBrush = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
     private static readonly Brush ArrowBrush = new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1));
     private static readonly Brush SubtleBrush = new SolidColorBrush(Color.FromRgb(0xA0, 0xAE, 0xC0));
     private static readonly Brush TooltipBg = new SolidColorBrush(Color.FromArgb(230, 0x1B, 0x30, 0x44));
-    private static readonly Brush WeekendDim = new SolidColorBrush(Color.FromArgb(18, 0x64, 0x74, 0x8B));
-    private static readonly Brush TodayDotBrush = new SolidColorBrush(Color.FromRgb(0x2B, 0x6C, 0xB0));
+    private static readonly Brush WeekendDim = new SolidColorBrush(Color.FromArgb(12, 0x0F, 0x17, 0x2A));
+    private static readonly Brush TodayDotBrush = new SolidColorBrush(Color.FromRgb(0x3B, 0x82, 0xF6));
     private static readonly Brush ArrowHoverBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF));
-    private static readonly Brush MonthSummaryBg = new SolidColorBrush(Color.FromArgb(30, 0x2B, 0x6C, 0xB0));
+    private static readonly Brush MonthSummaryBg = new SolidColorBrush(Color.FromArgb(30, 0x3B, 0x82, 0xF6));
     private static readonly Brush DayCountBrush = new SolidColorBrush(Color.FromArgb(140, 0xFF, 0xFF, 0xFF));
-    private static readonly Brush BestDayBadgeBg = new SolidColorBrush(Color.FromArgb(200, 0x0F, 0x9D, 0x7A));
-    private static readonly Brush WorstDayBadgeBg = new SolidColorBrush(Color.FromArgb(200, 0xC4, 0x4B, 0x3B));
-    private static readonly Brush PnlBarGreen = new SolidColorBrush(Color.FromArgb(120, 0x0F, 0x9D, 0x7A));
-    private static readonly Brush PnlBarRed = new SolidColorBrush(Color.FromArgb(120, 0xC4, 0x4B, 0x3B));
-    private static readonly Brush StreakGreenDot = new SolidColorBrush(Color.FromArgb(180, 0x0F, 0x9D, 0x7A));
-    private static readonly Brush StreakRedDot = new SolidColorBrush(Color.FromArgb(180, 0xC4, 0x4B, 0x3B));
-    private static readonly Pen CellPen = new(new SolidColorBrush(Color.FromRgb(0xF1, 0xF5, 0xF9)), 1);
-    private static readonly Pen HoverPen = new(new SolidColorBrush(Color.FromArgb(60, 0x2B, 0x6C, 0xB0)), 1.5);
+    private static readonly Brush BestDayBadgeBg = new SolidColorBrush(Color.FromArgb(200, 0x10, 0xB9, 0x81));
+    private static readonly Brush WorstDayBadgeBg = new SolidColorBrush(Color.FromArgb(200, 0xEF, 0x44, 0x44));
+    private static readonly Brush PnlBarGreen = new SolidColorBrush(Color.FromArgb(120, 0x10, 0xB9, 0x81));
+    private static readonly Brush PnlBarRed = new SolidColorBrush(Color.FromArgb(120, 0xEF, 0x44, 0x44));
+    private static readonly Brush StreakGreenDot = new SolidColorBrush(Color.FromArgb(180, 0x10, 0xB9, 0x81));
+    private static readonly Brush StreakRedDot = new SolidColorBrush(Color.FromArgb(180, 0xEF, 0x44, 0x44));
+    private static readonly Pen CellPen = new(new SolidColorBrush(Color.FromRgb(0x33, 0x41, 0x55)), 1);
+    private static readonly Pen HoverPen = new(new SolidColorBrush(Color.FromArgb(60, 0x38, 0xBD, 0xF8)), 1.5);
     private static readonly Pen SelectedPen;
     private static readonly Pen TodayPen;
     private static readonly Pen TooltipBorderPen;
@@ -285,13 +285,14 @@ public sealed class PnLCalendarCanvas : FrameworkElement
         var gridH = h - headerH - dayHeaderH - summaryBarH;
         var cellH = gridH / 6;
 
-        // Tiered cell typography — enlarged for readability
-        var isCompact = cellH < 42;
+        // Tiered rendering based on cell height
+        var isUltraCompact = cellH < 36;
+        var isCompact = cellH < 50;
         var isLarge = cellH >= 60;
-        var dayNumSize = isCompact ? 11.0 : isLarge ? 14.0 : 12.5;
-        var pnlSize = isCompact ? 12.0 : isLarge ? 16.0 : 14.0;
+        var dayNumSize = isUltraCompact ? 9.0 : isCompact ? 10.5 : isLarge ? 14.0 : 12.5;
+        var pnlSize = isUltraCompact ? 11.0 : isCompact ? 13.0 : isLarge ? 16.0 : 14.0;
         var countSize = isCompact ? 8.5 : isLarge ? 11.0 : 10.0;
-        var wlSize = countSize;
+        var wlSize = isCompact ? 9.0 : countSize;
 
         // Header with gradient
         dc.DrawRoundedRectangle(HeaderBg, null, new Rect(0, 0, w, headerH), 8, 8);
@@ -423,8 +424,8 @@ public sealed class PnLCalendarCanvas : FrameworkElement
                 {
                     var intensity = (byte)Math.Clamp((double)(Math.Abs(summary.PnLDollars) / maxAbsPnL) * 105 + 35, 35, 140);
                     var bg = summary.PnLDollars > 0
-                        ? new SolidColorBrush(Color.FromArgb(intensity, 0x0F, 0x9D, 0x7A))
-                        : new SolidColorBrush(Color.FromArgb(intensity, 0xC4, 0x4B, 0x3B));
+                        ? new SolidColorBrush(Color.FromArgb(intensity, 0x10, 0xB9, 0x81))
+                        : new SolidColorBrush(Color.FromArgb(intensity, 0xEF, 0x44, 0x44));
                     bg.Freeze();
                     dc.DrawRoundedRectangle(bg, null, cellRect, 5, 5);
                 }
@@ -469,69 +470,89 @@ public sealed class PnLCalendarCanvas : FrameworkElement
             var dayOfWeek = new DateTime(DisplayYear, DisplayMonth, day).DayOfWeek;
             var isWeekday = dayOfWeek != DayOfWeek.Saturday && dayOfWeek != DayOfWeek.Sunday;
             var dayText = MakeText(day.ToString(), dayNumSize, DayNumBrush, UiTypeface, FontWeights.SemiBold);
-            dc.DrawText(dayText, new Point(x + 8, y + 6));
+            dc.DrawText(dayText, new Point(x + 6, y + 4));
 
-            // P&L info
+            // P&L info — tiered rendering
             if (lookup.TryGetValue(date, out var s))
             {
-                // Trade count badge — top-right (skip if today dot is there)
-                var countX = date == today ? x + cellW - 22 : x + cellW - 8;
-                var countText = MakeText($"{s.TradeCount}T", countSize, SubtleBrush, MonoTypeface);
-                dc.DrawText(countText, new Point(countX - countText.Width, y + 6));
-
-                // P&L amount — centered
+                // P&L amount
                 var pnlColor = s.PnLDollars >= 0 ? GreenTextBrush : RedTextBrush;
                 var sign = s.PnLDollars >= 0 ? "+" : "";
                 var pnlText = MakeText($"{sign}${s.PnLDollars:N0}", pnlSize, pnlColor, MonoTypeface, FontWeights.Bold);
-                dc.DrawText(pnlText, new Point(x + cellW / 2 - pnlText.Width / 2, y + cellH / 2 - pnlText.Height / 2 - 2));
 
-                // P&L magnitude bar — thin bar between P&L text and W-L (skip when compact)
-                if (!isCompact && maxAbsPnL > 0)
+                if (isUltraCompact)
                 {
-                    var barMaxW = cellW * 0.65;
-                    var barW = (double)(Math.Abs(s.PnLDollars) / maxAbsPnL) * barMaxW;
-                    if (barW > 2)
+                    // Ultra-compact: day number + P&L only, centered
+                    dc.DrawText(pnlText, new Point(x + cellW / 2 - pnlText.Width / 2, y + cellH / 2 - pnlText.Height / 2 + 1));
+                }
+                else if (isCompact)
+                {
+                    // Compact: day number + P&L (offset above center) + W-L at bottom. No badge, no bars, no dots.
+                    dc.DrawText(pnlText, new Point(x + cellW / 2 - pnlText.Width / 2, y + cellH * 0.38 - pnlText.Height / 2));
+
+                    var wlText = MakeText($"{s.Wins}W {s.Losses}L", wlSize, SubtleBrush, MonoTypeface);
+                    dc.DrawText(wlText, new Point(x + cellW / 2 - wlText.Width / 2, y + cellH - wlText.Height - 4));
+                }
+                else
+                {
+                    // Normal: everything — trade count badge, P&L, magnitude bar, W-L, streak dots
+
+                    // Trade count badge — top-right (skip if today dot is there)
+                    var countX = date == today ? x + cellW - 22 : x + cellW - 8;
+                    var countText = MakeText($"{s.TradeCount}T", countSize, SubtleBrush, MonoTypeface);
+                    dc.DrawText(countText, new Point(countX - countText.Width, y + 6));
+
+                    // P&L centered
+                    dc.DrawText(pnlText, new Point(x + cellW / 2 - pnlText.Width / 2, y + cellH / 2 - pnlText.Height / 2 - 2));
+
+                    // P&L magnitude bar
+                    if (maxAbsPnL > 0)
                     {
-                        var barH = 5.0;
-                        var barX = x + cellW / 2 - barW / 2;
-                        var barY = y + cellH / 2 + 12;
-                        var barBrush = s.PnLDollars >= 0 ? PnlBarGreen : PnlBarRed;
-                        dc.DrawRoundedRectangle(barBrush, null, new Rect(barX, barY, barW, barH), 2, 2);
+                        var barMaxW = cellW * 0.65;
+                        var barW = (double)(Math.Abs(s.PnLDollars) / maxAbsPnL) * barMaxW;
+                        if (barW > 2)
+                        {
+                            var barH = 5.0;
+                            var barX = x + cellW / 2 - barW / 2;
+                            var barY = y + cellH / 2 + 12;
+                            var barBrush = s.PnLDollars >= 0 ? PnlBarGreen : PnlBarRed;
+                            dc.DrawRoundedRectangle(barBrush, null, new Rect(barX, barY, barW, barH), 2, 2);
+                        }
                     }
-                }
 
-                // W-L — bottom
-                var wlText = MakeText($"{s.Wins}W {s.Losses}L", wlSize, SubtleBrush, MonoTypeface);
-                dc.DrawText(wlText, new Point(x + cellW / 2 - wlText.Width / 2, y + cellH - wlText.Height - 6));
+                    // W-L — bottom
+                    var wlText = MakeText($"{s.Wins}W {s.Losses}L", wlSize, SubtleBrush, MonoTypeface);
+                    dc.DrawText(wlText, new Point(x + cellW / 2 - wlText.Width / 2, y + cellH - wlText.Height - 6));
 
-                // Streak dots — small dots at bottom showing streak length (skip when compact)
-                if (!isCompact && streaks.TryGetValue(date, out var streak) && Math.Abs(streak) >= 2)
-                {
-                    var dotCount = Math.Min(Math.Abs(streak), 5);
-                    var dotR = 2.5;
-                    var dotSpacing = 7.0;
-                    var dotsW = dotCount * dotSpacing - (dotSpacing - dotR * 2);
-                    var dotStartX = x + cellW / 2 - dotsW / 2;
-                    var dotY = y + cellH - 4;
-                    var dotBrush = streak > 0 ? StreakGreenDot : StreakRedDot;
-                    for (var d = 0; d < dotCount; d++)
-                        dc.DrawEllipse(dotBrush, null, new Point(dotStartX + d * dotSpacing + dotR, dotY), dotR, dotR);
-                }
+                    // Streak dots
+                    if (streaks.TryGetValue(date, out var streak) && Math.Abs(streak) >= 2)
+                    {
+                        var dotCount = Math.Min(Math.Abs(streak), 5);
+                        var dotR = 2.5;
+                        var dotSpacing = 7.0;
+                        var dotsW = dotCount * dotSpacing - (dotSpacing - dotR * 2);
+                        var dotStartX = x + cellW / 2 - dotsW / 2;
+                        var dotY = y + cellH - 4;
+                        var dotBrush = streak > 0 ? StreakGreenDot : StreakRedDot;
+                        for (var d = 0; d < dotCount; d++)
+                            dc.DrawEllipse(dotBrush, null, new Point(dotStartX + d * dotSpacing + dotR, dotY), dotR, dotR);
+                    }
 
-                // Best/worst day badge — star at top-right corner
-                if (bestDay.HasValue && date == bestDay.Value && bestPnL > 0)
-                {
-                    var badge = MakeText("\u2605", 10, Brushes.White, UiTypeface);
-                    dc.DrawRoundedRectangle(BestDayBadgeBg, null,
-                        new Rect(x + cellW - 18, y + 2, 15, 15), 4, 4);
-                    dc.DrawText(badge, new Point(x + cellW - 16, y + 2));
-                }
-                else if (worstDay.HasValue && date == worstDay.Value && worstPnL < 0)
-                {
-                    var badge = MakeText("\u2605", 10, Brushes.White, UiTypeface);
-                    dc.DrawRoundedRectangle(WorstDayBadgeBg, null,
-                        new Rect(x + cellW - 18, y + 2, 15, 15), 4, 4);
-                    dc.DrawText(badge, new Point(x + cellW - 16, y + 2));
+                    // Best/worst day badge — star at top-right corner
+                    if (bestDay.HasValue && date == bestDay.Value && bestPnL > 0)
+                    {
+                        var badge = MakeText("\u2605", 10, Brushes.White, UiTypeface);
+                        dc.DrawRoundedRectangle(BestDayBadgeBg, null,
+                            new Rect(x + cellW - 18, y + 2, 15, 15), 4, 4);
+                        dc.DrawText(badge, new Point(x + cellW - 16, y + 2));
+                    }
+                    else if (worstDay.HasValue && date == worstDay.Value && worstPnL < 0)
+                    {
+                        var badge = MakeText("\u2605", 10, Brushes.White, UiTypeface);
+                        dc.DrawRoundedRectangle(WorstDayBadgeBg, null,
+                            new Rect(x + cellW - 18, y + 2, 15, 15), 4, 4);
+                        dc.DrawText(badge, new Point(x + cellW - 16, y + 2));
+                    }
                 }
             }
             else if (isWeekday && date < today)

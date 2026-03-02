@@ -4,7 +4,7 @@
         xmlns:controls="clr-namespace:SwingDayTradingPlatform.UI.Wpf.Controls"
         Title="Day Detail"
         Width="1440"
-        Height="1440"
+        Height="1000"
         MinWidth="1000"
         MinHeight="800"
         Background="#0F172A"
@@ -38,17 +38,17 @@
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="12.5"/>
-            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Padding" Value="12,8"/>
             <Setter Property="BorderBrush" Value="#334155"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
         </Style>
         <Style TargetType="DataGridCell">
-            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Padding" Value="10,6"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Foreground" Value="#CBD5E1"/>
         </Style>
         <Style TargetType="DataGridRow">
-            <Setter Property="MinHeight" Value="50"/>
+            <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Background" Value="#1E293B"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -65,9 +65,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="5*" MinHeight="650"/>
+            <RowDefinition Height="3*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="1*" MinHeight="180"/>
+            <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -192,7 +192,7 @@
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="Padding" Value="14,10"/>
+                                <Setter Property="Padding" Value="10,6"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Direction}" Value="Long">
                                         <Setter Property="Foreground" Value="#00B894"/>
@@ -209,7 +209,7 @@
                             <Style TargetType="TextBlock">
                                 <Setter Property="Foreground" Value="#0F9D7A"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
-                                <Setter Property="Padding" Value="14,10"/>
+                                <Setter Property="Padding" Value="10,6"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
@@ -218,7 +218,7 @@
                             <Style TargetType="TextBlock">
                                 <Setter Property="Foreground" Value="#38BDF8"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
-                                <Setter Property="Padding" Value="14,10"/>
+                                <Setter Property="Padding" Value="10,6"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
@@ -231,7 +231,7 @@
                                 <Setter Property="FontWeight" Value="Bold"/>
                                 <Setter Property="FontFamily" Value="Consolas"/>
                                 <Setter Property="FontSize" Value="13"/>
-                                <Setter Property="Padding" Value="14,10"/>
+                                <Setter Property="Padding" Value="10,6"/>
                                 <Setter Property="Foreground" Value="#CBD5E1"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
