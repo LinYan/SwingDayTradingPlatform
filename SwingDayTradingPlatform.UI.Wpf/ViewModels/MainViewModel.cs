@@ -88,6 +88,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _barFeed.BarClosed += OnBarClosed;
 
         Backtest = new BacktestViewModel(_config);
+        Alerts = new AlertsViewModel();
 
         _clockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _clockTimer.Tick += (_, _) => UpdateClock();
@@ -101,6 +102,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
     }
 
     public BacktestViewModel Backtest { get; }
+    public AlertsViewModel Alerts { get; }
 
     public RelayCommand StartCommand { get; }
     public RelayCommand StopCommand { get; }
@@ -168,6 +170,7 @@ public sealed class MainViewModel : ObservableObject, IAsyncDisposable
         _barFeed.BarClosed -= OnBarClosed;
         await _barFeed.DisposeAsync();
         await _broker.DisposeAsync();
+        await Alerts.DisposeAsync();
         // Acquire the lock to ensure no in-flight OnBarClosed is holding it before disposing
         await _barProcessingLock.WaitAsync();
         _barProcessingLock.Dispose();

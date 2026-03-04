@@ -1,0 +1,3 @@
+eventTime,pivotTime,type,symbol,close,high,low,emaPeriod,emaValue,emaDirection,mode
+2024-01-02 10:05:00,2024-01-02 09:55:00,MAX,MES,4805.50,4806.50,4803.50,20,4801.91,UP,close
+2024-01-02 10:35:00,2024-01-02 10:25:00,MIN,MES,4796.50,4799.00,4796.00,20,4800.97,DOWN,close

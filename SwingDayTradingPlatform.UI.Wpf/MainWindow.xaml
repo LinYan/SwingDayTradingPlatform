@@ -1183,6 +1183,347 @@
                 </Grid>
                 </Border>
             </TabItem>
+
+            <!-- ============ ALERTS TAB ============ -->
+            <TabItem Header="Alerts">
+                <Border Background="#1E1E2E" CornerRadius="0,0,10,10">
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Config + Controls Card -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Row 0: Mode toggle + core settings -->
+                                <WrapPanel Margin="0,0,0,10">
+                                    <StackPanel Margin="0,0,20,0">
+                                        <TextBlock Text="MODE" Style="{StaticResource ParamLabel}"/>
+                                        <Border Background="#111827" CornerRadius="8" Padding="3" Height="34">
+                                            <StackPanel Orientation="Horizontal">
+                                                <RadioButton x:Name="ModeReplay" GroupName="AlertMode"
+                                                             IsChecked="{Binding Alerts.IsReplayMode, Mode=OneWay}"
+                                                             Checked="OnAlertModeReplay" Cursor="Hand">
+                                                    <RadioButton.Template>
+                                                        <ControlTemplate TargetType="RadioButton">
+                                                            <Border x:Name="Bd" CornerRadius="6" Padding="14,4" Background="Transparent" SnapsToDevicePixels="True">
+                                                                <TextBlock x:Name="Txt" Text="Replay" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsChecked" Value="True">
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#3B82F6"/>
+                                                                    <Setter TargetName="Txt" Property="Foreground" Value="White"/>
+                                                                </Trigger>
+                                                                <MultiTrigger>
+                                                                    <MultiTrigger.Conditions>
+                                                                        <Condition Property="IsChecked" Value="False"/>
+                                                                        <Condition Property="IsMouseOver" Value="True"/>
+                                                                    </MultiTrigger.Conditions>
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#1E293B"/>
+                                                                    <Setter TargetName="Txt" Property="Foreground" Value="#94A3B8"/>
+                                                                </MultiTrigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </RadioButton.Template>
+                                                </RadioButton>
+                                                <RadioButton x:Name="ModeRealtime" GroupName="AlertMode"
+                                                             Checked="OnAlertModeRealtime" Cursor="Hand">
+                                                    <RadioButton.Template>
+                                                        <ControlTemplate TargetType="RadioButton">
+                                                            <Border x:Name="Bd" CornerRadius="6" Padding="14,4" Background="Transparent" SnapsToDevicePixels="True">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <Ellipse x:Name="Dot" Width="6" Height="6" Fill="#64748B" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                                    <TextBlock x:Name="Txt" Text="Realtime" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" VerticalAlignment="Center"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsChecked" Value="True">
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#10B981"/>
+                                                                    <Setter TargetName="Txt" Property="Foreground" Value="White"/>
+                                                                    <Setter TargetName="Dot" Property="Fill" Value="White"/>
+                                                                </Trigger>
+                                                                <MultiTrigger>
+                                                                    <MultiTrigger.Conditions>
+                                                                        <Condition Property="IsChecked" Value="False"/>
+                                                                        <Condition Property="IsMouseOver" Value="True"/>
+                                                                    </MultiTrigger.Conditions>
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#1E293B"/>
+                                                                    <Setter TargetName="Txt" Property="Foreground" Value="#94A3B8"/>
+                                                                </MultiTrigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </RadioButton.Template>
+                                                </RadioButton>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,16,0">
+                                        <TextBlock Text="SYMBOL" Style="{StaticResource ParamLabel}"/>
+                                        <TextBox Width="80" Height="32" Text="{Binding Alerts.Symbol, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,16,0">
+                                        <TextBlock Text="EXCHANGE" Style="{StaticResource ParamLabel}"/>
+                                        <TextBox Width="70" Height="32" Text="{Binding Alerts.Exchange, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,16,0">
+                                        <TextBlock Text="LOOKBACK" Style="{StaticResource ParamLabel}"/>
+                                        <TextBox Width="60" Height="32" Text="{Binding Alerts.Lookback, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,16,0">
+                                        <TextBlock Text="EMA" Style="{StaticResource ParamLabel}"/>
+                                        <TextBox Width="60" Height="32" Text="{Binding Alerts.EmaPeriod, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,16,0">
+                                        <TextBlock Text="OUTPUT CSV" Style="{StaticResource ParamLabel}"/>
+                                        <TextBox Width="160" Height="32" Text="{Binding Alerts.OutputPath, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </WrapPanel>
+
+                                <!-- Row 1: Replay-specific settings -->
+                                <Border Grid.Row="1" Margin="0,0,0,10" Padding="12,8" CornerRadius="8" Background="#162336" BorderBrush="#253347" BorderThickness="1"
+                                        Visibility="{Binding Alerts.IsReplayMode, Converter={StaticResource BoolToVis}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="CSV FILE" Foreground="#3B82F6" FontSize="11" FontWeight="Bold" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                        <TextBox Width="400" Height="30" Text="{Binding Alerts.FilePath, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Row 1 alt: Realtime-specific settings (IB Gateway + Telegram) -->
+                                <Border Grid.Row="1" Margin="0,0,0,10" Padding="12,8" CornerRadius="8" Background="#0F2318" BorderBrush="#1A3A28" BorderThickness="1"
+                                        Visibility="{Binding Alerts.IsRealtimeMode, Converter={StaticResource BoolToVis}}">
+                                    <WrapPanel>
+                                        <TextBlock Text="IB GATEWAY" Foreground="#10B981" FontSize="11" FontWeight="Bold" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                        <StackPanel Margin="0,0,12,0">
+                                            <TextBlock Text="HOST" Style="{StaticResource ParamLabel}"/>
+                                            <TextBox Width="110" Height="28" Text="{Binding Alerts.IbHost, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,12,0">
+                                            <TextBlock Text="PORT" Style="{StaticResource ParamLabel}"/>
+                                            <TextBox Width="65" Height="28" Text="{Binding Alerts.IbPort, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,24,0">
+                                            <TextBlock Text="CLIENT ID" Style="{StaticResource ParamLabel}"/>
+                                            <TextBox Width="55" Height="28" Text="{Binding Alerts.ClientId, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                        <Border Width="1" Background="#1A3A28" Margin="0,2,16,2"/>
+                                        <TextBlock Text="TELEGRAM" Foreground="#F59E0B" FontSize="11" FontWeight="Bold" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                        <StackPanel Margin="0,0,12,0">
+                                            <TextBlock Text="BOT TOKEN" Style="{StaticResource ParamLabel}"/>
+                                            <TextBox Width="200" Height="28" Text="{Binding Alerts.TelegramToken, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="CHAT ID" Style="{StaticResource ParamLabel}"/>
+                                            <TextBox Width="120" Height="28" Text="{Binding Alerts.TelegramChatId, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                    </WrapPanel>
+                                </Border>
+
+                                <!-- Row 2: Buttons -->
+                                <WrapPanel Grid.Row="2" Margin="0,0,0,6">
+                                    <Button Width="140" Height="36" Margin="0,0,8,0" Background="{StaticResource AccentGreenBrush}" Style="{StaticResource PillButton}"
+                                            Command="{Binding Alerts.StartCommand}" ToolTip="Start extrema detection">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#x25B6;" FontSize="10" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Start Alerts" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Width="110" Height="36" Margin="0,0,8,0" Background="{StaticResource AccentRedBrush}" Style="{StaticResource PillButton}"
+                                            Command="{Binding Alerts.StopCommand}" ToolTip="Stop extrema detection">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#x25A0;" FontSize="9" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Stop" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Width="100" Height="36" Background="#475569" Style="{StaticResource PillButton}"
+                                            Command="{Binding Alerts.ClearCommand}" ToolTip="Clear all alerts from the list">
+                                        <TextBlock Text="Clear" VerticalAlignment="Center"/>
+                                    </Button>
+                                </WrapPanel>
+
+                                <!-- Row 3: Status bar -->
+                                <Border Grid.Row="3" Background="#16161E" CornerRadius="6" Padding="12,6" Margin="0,4,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Grid VerticalAlignment="Center" Margin="0,0,6,0" Width="8" Height="8"
+                                              Visibility="{Binding Alerts.IsRunning, Converter={StaticResource BoolToVis}}">
+                                            <Ellipse Width="8" Height="8" Fill="#10B981" Opacity="0.4">
+                                                <Ellipse.Triggers>
+                                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                                        <BeginStoryboard>
+                                                            <Storyboard RepeatBehavior="Forever">
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                    From="0.4" To="0.08" Duration="0:0:1.2" AutoReverse="True"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </EventTrigger>
+                                                </Ellipse.Triggers>
+                                            </Ellipse>
+                                            <Ellipse Width="6" Height="6" Fill="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Grid>
+                                        <TextBlock Foreground="#94A3B8" FontSize="12" FontFamily="Consolas" VerticalAlignment="Center">
+                                            <Run Text="{Binding Alerts.Status, Mode=OneWay}" FontWeight="SemiBold"/>
+                                            <Run Text="   Bars: " Foreground="#64748B"/>
+                                            <Run Text="{Binding Alerts.BarCount, Mode=OneWay}"/>
+                                            <Run Text="   Window: " Foreground="#64748B"/>
+                                            <Run Text="{Binding Alerts.CurrentBarWindow, Mode=OneWay}"/>
+                                            <Run Text="   Alerts: " Foreground="#64748B"/>
+                                            <Run Text="{Binding Alerts.Alerts.Count, Mode=OneWay}" Foreground="{StaticResource AccentAmberBrush}" FontWeight="Bold"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Latest bar info strip + IB Connection Status -->
+                        <Border Grid.Row="1" Background="#1A1A2A" Margin="0,0,0,8" Padding="14,6" CornerRadius="6">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock FontFamily="Consolas" FontSize="12" Foreground="#94A3B8" VerticalAlignment="Center">
+                                    <Run Text="LATEST BAR  " Foreground="#5A6A7A" FontWeight="SemiBold"/>
+                                    <Run Text="{Binding Alerts.LatestBarInfo, Mode=OneWay}"/>
+                                </TextBlock>
+                                <!-- IB connection log (only visible when there are entries) -->
+                                <Expander Grid.Row="1" Margin="0,4,0,0"
+                                          Visibility="{Binding Alerts.ConnectionLogs.Count, Converter={StaticResource BoolToVis}, FallbackValue=Collapsed}"
+                                          Header="IB Connection Log" IsExpanded="True">
+                                    <ListBox ItemsSource="{Binding Alerts.ConnectionLogs}" Background="Transparent" BorderThickness="0"
+                                             MaxHeight="120" FontFamily="Consolas" FontSize="11"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="4,1"/>
+                                                <Setter Property="Foreground" Value="#7BA3C4"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="BorderThickness" Value="0"/>
+                                                <Setter Property="Focusable" Value="False"/>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
+                                </Expander>
+                            </Grid>
+                        </Border>
+
+                        <!-- Alerts DataGrid + Date list -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Date list for day chart -->
+                            <Border Grid.Column="0" Background="#1E293B" CornerRadius="12,0,0,12" BorderBrush="#334155" BorderThickness="1" Margin="0,0,4,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Border Padding="12,10" Background="#253347" CornerRadius="12,0,0,0">
+                                        <TextBlock Text="DATES" FontSize="11" FontWeight="Bold" Foreground="#94A3B8" FontFamily="Segoe UI"/>
+                                    </Border>
+                                    <ListBox Grid.Row="1" x:Name="AlertDateList"
+                                             ItemsSource="{Binding Alerts.AvailableDates}"
+                                             Background="Transparent" BorderThickness="0"
+                                             FontFamily="Consolas" FontSize="12"
+                                             Foreground="#CBD5E1"
+                                             SelectionChanged="OnAlertDateSelectionChanged"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding StringFormat='{}{0:MM/dd ddd}'}" Padding="4,4"/>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="8,2"/>
+                                                <Setter Property="Cursor" Value="Hand"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="Foreground" Value="#CBD5E1"/>
+                                                <Setter Property="BorderThickness" Value="0"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#334155"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter Property="Background" Value="#1E3A5F"/>
+                                                        <Setter Property="Foreground" Value="White"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
+                                </Grid>
+                            </Border>
+
+                            <!-- Alerts DataGrid -->
+                            <Border Grid.Column="1" Style="{StaticResource Card}" Padding="0" Margin="0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Border Padding="16,10" Background="#253347" CornerRadius="0,12,0,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#x26A0;" Foreground="{StaticResource AccentAmberBrush}" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="DETECTED EXTREMA" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                            <Border Background="#334155" CornerRadius="4" Padding="8,2" Margin="12,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Alerts.Alerts.Count, FallbackValue='0'}" FontSize="11" Foreground="#94A3B8" FontFamily="Consolas"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <DataGrid Grid.Row="1" ItemsSource="{Binding Alerts.Alerts}" AutoGenerateColumns="False"
+                                              IsReadOnly="True" CanUserSortColumns="True" SelectionMode="Single"
+                                              VerticalScrollBarVisibility="Auto" Margin="0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Event Time" Binding="{Binding EventTime}" Width="140" FontFamily="Consolas"/>
+                                        <DataGridTextColumn Header="Pivot" Binding="{Binding PivotTime}" Width="65" FontFamily="Consolas"/>
+                                        <DataGridTemplateColumn Header="Type" Width="70" SortMemberPath="Type">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Type}" FontWeight="Bold" FontFamily="Consolas">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsMax}" Value="True">
+                                                                        <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding IsMax}" Value="False">
+                                                                        <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="70"/>
+                                        <DataGridTextColumn Header="Close" Binding="{Binding Close}" Width="90" FontFamily="Consolas" FontWeight="SemiBold"/>
+                                        <DataGridTextColumn Header="High" Binding="{Binding High}" Width="90" FontFamily="Consolas"/>
+                                        <DataGridTextColumn Header="Low" Binding="{Binding Low}" Width="90" FontFamily="Consolas"/>
+                                        <DataGridTextColumn Header="EMA" Binding="{Binding EmaValue}" Width="90" FontFamily="Consolas"/>
+                                        <DataGridTextColumn Header="Dir" Binding="{Binding EmaDir}" Width="70" FontFamily="Consolas"/>
+                                    </DataGrid.Columns>
+                                    </DataGrid>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

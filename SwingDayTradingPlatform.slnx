@@ -7,4 +7,6 @@
   <Project Path="SwingDayTradingPlatform.Strategy/SwingDayTradingPlatform.Strategy.csproj" />
   <Project Path="SwingDayTradingPlatform.Tests/SwingDayTradingPlatform.Tests.csproj" />
   <Project Path="SwingDayTradingPlatform.UI.Wpf/SwingDayTradingPlatform.UI.Wpf.csproj" />
+  <Project Path="SwingDayTradingPlatform.AlertService/SwingDayTradingPlatform.AlertService.csproj" />
+  <Project Path="SwingDayTradingPlatform.AlertService.Tests/SwingDayTradingPlatform.AlertService.Tests.csproj" />
 </Solution>

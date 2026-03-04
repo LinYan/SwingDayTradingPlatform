@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using SwingDayTradingPlatform.UI.Wpf.Controls;
 using SwingDayTradingPlatform.UI.Wpf.ViewModels;
 
@@ -35,9 +36,26 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OnAlertModeReplay(object sender, RoutedEventArgs e) => _viewModel.Alerts.Mode = "replay";
+    private void OnAlertModeRealtime(object sender, RoutedEventArgs e) => _viewModel.Alerts.Mode = "realtime";
+
     private void OnCalendarDateSelected1(object sender, RoutedEventArgs e) => OpenDayDetail(sender, "EmaPullback", "EMA Pullback");
     private void OnCalendarDateSelected9(object sender, RoutedEventArgs e) => OpenDayDetail(sender, "BrooksPA", "Brooks PA");
     private void OnCalendarDateSelected12(object sender, RoutedEventArgs e) => OpenDayDetail(sender, "SlopeInflection", "Slope Inflection");
+
+    private void OnAlertDateSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ListBox lb || lb.SelectedItem is not DateOnly date)
+            return;
+
+        var vm = _viewModel.Alerts.OpenDayChart(date);
+        if (vm is null) return;
+
+        var window = new AlertsDayDetailWindow(vm) { Owner = this };
+        window.Show();
+
+        lb.SelectedItem = null; // allow re-selection of same date
+    }
 
     private void OpenDayDetail(object sender, string strategyKey, string displayName)
     {

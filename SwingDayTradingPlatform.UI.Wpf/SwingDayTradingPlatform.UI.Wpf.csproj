@@ -7,6 +7,7 @@
     <ProjectReference Include="..\SwingDayTradingPlatform.Risk\SwingDayTradingPlatform.Risk.csproj" />
     <ProjectReference Include="..\SwingDayTradingPlatform.Execution.Ibkr\SwingDayTradingPlatform.Execution.Ibkr.csproj" />
     <ProjectReference Include="..\SwingDayTradingPlatform.Backtesting\SwingDayTradingPlatform.Backtesting.csproj" />
+    <ProjectReference Include="..\SwingDayTradingPlatform.AlertService\SwingDayTradingPlatform.AlertService.csproj" />
     <Reference Include="CSharpAPI">
       <HintPath>C:\TWS API\source\CSharpClient\client\bin\Release\netstandard2.0\CSharpAPI.dll</HintPath>
       <Private>true</Private>
@@ -25,6 +26,9 @@
 
   <ItemGroup>
     <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\SwingDayTradingPlatform.AlertService\sample_data.csv" Link="sample_data.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
