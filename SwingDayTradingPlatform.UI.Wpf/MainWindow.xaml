@@ -1305,15 +1305,15 @@
                                         <TextBlock Text="IB GATEWAY" Foreground="#10B981" FontSize="11" FontWeight="Bold" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                         <StackPanel Margin="0,0,12,0">
                                             <TextBlock Text="HOST" Style="{StaticResource ParamLabel}"/>
-                                            <TextBox Width="110" Height="28" Text="{Binding Alerts.IbHost, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBox Width="140" Height="32" Text="{Binding Alerts.IbHost, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
                                         <StackPanel Margin="0,0,12,0">
                                             <TextBlock Text="PORT" Style="{StaticResource ParamLabel}"/>
-                                            <TextBox Width="65" Height="28" Text="{Binding Alerts.IbPort, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBox Width="80" Height="32" Text="{Binding Alerts.IbPort, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
                                         <StackPanel Margin="0,0,24,0">
                                             <TextBlock Text="CLIENT ID" Style="{StaticResource ParamLabel}"/>
-                                            <TextBox Width="55" Height="28" Text="{Binding Alerts.ClientId, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBox Width="75" Height="32" Text="{Binding Alerts.ClientId, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
                                         <Border Width="1" Background="#1A3A28" Margin="0,2,16,2"/>
                                         <TextBlock Text="TELEGRAM" Foreground="#F59E0B" FontSize="11" FontWeight="Bold" Margin="0,0,12,0" VerticalAlignment="Center"/>

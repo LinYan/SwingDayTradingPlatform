@@ -13,10 +13,6 @@ public partial class AlertsDayDetailWindow : Window
         TxtDateDisplay.Text = viewModel.DateDisplay;
         TxtAlertCount.Text = $"{viewModel.AlertCount} alerts";
         Title = $"Alerts Day Chart \u2014 {viewModel.DateDisplay}";
-
-        DayChart.Bars = viewModel.DayBars;
-        DayChart.FastEmaValues = viewModel.EmaValues;
-        DayChart.TradeMarkers = viewModel.TradeMarkers;
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e) => Close();

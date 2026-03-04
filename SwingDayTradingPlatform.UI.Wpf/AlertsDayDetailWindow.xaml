@@ -69,7 +69,10 @@
         <!-- Chart canvas -->
         <Border Grid.Row="2" Background="#1E1E2E" CornerRadius="12" ClipToBounds="True"
                 BorderBrush="#2A3A50" BorderThickness="1">
-            <controls:ChartCanvas x:Name="DayChart"/>
+            <controls:ChartCanvas x:Name="DayChart"
+                Bars="{Binding DayBars}"
+                FastEmaValues="{Binding EmaValues}"
+                TradeMarkers="{Binding TradeMarkers}"/>
         </Border>
     </Grid>
 </Window>
