@@ -1290,11 +1290,11 @@
                                 </WrapPanel>
 
                                 <!-- Row 1: Replay-specific settings -->
-                                <Border Grid.Row="1" Margin="0,0,0,10" Padding="12,8" CornerRadius="8" Background="#162336" BorderBrush="#253347" BorderThickness="1"
+                                <Border Grid.Row="1" Margin="0,0,0,10" Padding="14,10" CornerRadius="8" Background="#162336" BorderBrush="#253347" BorderThickness="1"
                                         Visibility="{Binding Alerts.IsReplayMode, Converter={StaticResource BoolToVis}}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="CSV FILE" Foreground="#3B82F6" FontSize="11" FontWeight="Bold" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                                        <TextBox Width="400" Height="30" Text="{Binding Alerts.FilePath, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBox Width="700" Height="32" Text="{Binding Alerts.FilePath, UpdateSourceTrigger=PropertyChanged}"/>
                                     </StackPanel>
                                 </Border>
 
@@ -1319,11 +1319,11 @@
                                         <TextBlock Text="TELEGRAM" Foreground="#F59E0B" FontSize="11" FontWeight="Bold" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                         <StackPanel Margin="0,0,12,0">
                                             <TextBlock Text="BOT TOKEN" Style="{StaticResource ParamLabel}"/>
-                                            <TextBox Width="200" Height="28" Text="{Binding Alerts.TelegramToken, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBox Width="240" Height="32" Text="{Binding Alerts.TelegramToken, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
                                         <StackPanel>
                                             <TextBlock Text="CHAT ID" Style="{StaticResource ParamLabel}"/>
-                                            <TextBox Width="120" Height="28" Text="{Binding Alerts.TelegramChatId, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBox Width="140" Height="32" Text="{Binding Alerts.TelegramChatId, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
                                     </WrapPanel>
                                 </Border>
